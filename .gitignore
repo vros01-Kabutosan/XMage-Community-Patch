@@ -1,0 +1,20 @@
+# XMage Community Patch - generated/local data
+# Never commit migration downloads, extracted XMage trees or generated reports.
+
+# Migration tool working data
+**/migration-workspace/
+
+# Python local artifacts
+**/__pycache__/
+*.py[cod]
+
+# Temporary/download artifacts
+*.tmp
+*.part
+
+# Local IDE/OS noise
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
