@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
-"""Package and smoke-test the successfully compiled Deck Downloader V1 port.
+"""Build and validate an isolated XMage 1.4.61V1 Deck Downloader candidate.
 
-SAFE MODE: isolated build only. Never installs or activates XMage.
+SAFE MODE: nothing is installed into active XMage.
 
-Important XMage detail: Mage.Client configures maven-assembly-plugin, but the
-assembly goal is not bound to the normal package lifecycle. Therefore a plain
-`mvn ... package` correctly builds mage-client-1.4.61.jar but does not create
-the client distribution ZIP. This gate explicitly generates the official
-assembly when it is missing, then validates its contents.
+Strategy:
+1. Trust only the already-successful isolated Maven build record.
+2. Verify the compiled client JAR really contains DeckDownloaderPane + MageFrame.
+3. Generate the official Mage.Client assembly ZIP if needed.
+4. Use that official assembly as the dependency/layout baseline.
+5. In an isolated repair directory, replace its client JAR with the known-good
+   compiled patched JAR and copy the validated runtime to config/deck-downloader.
+6. Repack a Community Patch smoke candidate and validate it from the ZIP bytes.
+
+This intentionally avoids relying on Maven's internal choice of project/local
+repository artifact during assembly: the final candidate is deterministic and
+its two community payloads are explicitly verified after repacking.
 """
 from __future__ import annotations
 
@@ -49,7 +56,7 @@ def run(cmd, cwd: Path, log: Path, timeout=7200) -> None:
     )
     log.write_text(proc.stdout or "", encoding="utf-8")
     if proc.returncode != 0:
-        tail = "\n".join((proc.stdout or "").splitlines()[-20:])
+        tail = "\n".join((proc.stdout or "").splitlines()[-30:])
         raise RuntimeError(f"Maven command failed with code {proc.returncode}.\n{tail}")
 
 
@@ -63,7 +70,7 @@ def jar_has(path: Path, entry: str) -> bool:
 
 def find_compiled_client_jar(source: Path) -> Path:
     candidates = [
-        p for p in (source / "Mage.Client" / "target").rglob("*.jar")
+        p for p in (source / "Mage.Client" / "target").glob("*.jar")
         if jar_has(p, PANE_CLASS) and jar_has(p, FRAME_CLASS)
     ]
     if not candidates:
@@ -71,92 +78,116 @@ def find_compiled_client_jar(source: Path) -> Path:
     return max(candidates, key=lambda p: (p.stat().st_size, p.name))
 
 
-def normalize(name: str) -> str:
-    return name.replace("\\", "/").lstrip("./")
+def find_or_generate_official_assembly(source: Path, reports: Path, build: dict) -> Path:
+    target = source / "Mage.Client" / "target"
+    zips = sorted(target.glob("*.zip"), key=lambda p: p.stat().st_mtime, reverse=True)
+    if zips:
+        print(f"[OK] Reusing existing Mage.Client assembly ZIP: {zips[0].name}")
+        return zips[0]
+
+    mvn = Path(str(build.get("maven", "")))
+    if not mvn.exists():
+        raise RuntimeError(f"Recorded Maven executable is missing: {mvn}")
+
+    print("[STEP] Installing reactor artifacts for official assembly...")
+    run([mvn, "-pl", "Mage.Client", "-am", "-DskipTests", "install"],
+        source, reports / "maven-install-for-assembly.log")
+
+    print("[STEP] Generating official Mage.Client assembly ZIP...")
+    run([mvn, "-f", source / "Mage.Client" / "pom.xml", "-DskipTests", "assembly:single"],
+        source, reports / "maven-client-assembly.log")
+
+    zips = sorted(target.glob("*.zip"), key=lambda p: p.stat().st_mtime, reverse=True)
+    if not zips:
+        raise RuntimeError("Official Mage.Client assembly did not produce any ZIP")
+    print(f"[OK] Official assembly generated: {zips[0].name}")
+    return zips[0]
 
 
-def zip_runtime_entries(zf: zipfile.ZipFile) -> list[str]:
-    return [
-        name for name in zf.namelist()
-        if normalize(name).lower().startswith("config/deck-downloader/")
-    ]
+def locate_client_jar_in_tree(root: Path) -> Path:
+    candidates = []
+    for p in (root / "lib").glob("mage-client*.jar") if (root / "lib").exists() else []:
+        candidates.append(p)
+    if not candidates:
+        for p in root.rglob("mage-client*.jar"):
+            candidates.append(p)
+    if not candidates:
+        raise RuntimeError("Official assembly contains no mage-client JAR to replace")
+    return max(candidates, key=lambda p: p.stat().st_size)
 
 
-def nested_client_jars_with_pane(zip_path: Path) -> list[str]:
-    found = []
-    with zipfile.ZipFile(zip_path) as outer:
+def create_repaired_candidate(assembly: Path, client_jar: Path, runtime: Path,
+                              work: Path, output: Path) -> tuple[Path, dict]:
+    repair = work / "candidate-repair"
+    if repair.exists():
+        shutil.rmtree(repair)
+    repair.mkdir(parents=True)
+
+    print("[STEP] Extracting official assembly baseline...")
+    with zipfile.ZipFile(assembly) as zf:
+        zf.extractall(repair)
+
+    packaged_client = locate_client_jar_in_tree(repair)
+    old_hash = sha256(packaged_client)
+    shutil.copy2(client_jar, packaged_client)
+    new_hash = sha256(packaged_client)
+    if new_hash != sha256(client_jar):
+        raise RuntimeError("Patched client JAR copy verification failed")
+    print(f"[OK] Replaced assembly client JAR: {packaged_client.relative_to(repair)}")
+
+    runtime_dst = repair / "config" / "deck-downloader"
+    if runtime_dst.exists():
+        shutil.rmtree(runtime_dst)
+    shutil.copytree(runtime, runtime_dst)
+    print(f"[OK] Runtime injected: {runtime_dst.relative_to(repair)}")
+
+    output.mkdir(parents=True, exist_ok=True)
+    candidate = output / "XMage_1.4.61V1_CommunityPatch_DeckDownloader_SMOKE_CANDIDATE.zip"
+    candidate.unlink(missing_ok=True)
+    print("[STEP] Repacking deterministic smoke candidate...")
+    with zipfile.ZipFile(candidate, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
+        for p in sorted(repair.rglob("*")):
+            if p.is_file():
+                zf.write(p, p.relative_to(repair).as_posix())
+
+    return candidate, {
+        "official_assembly_client_sha256_before": old_hash,
+        "candidate_client_sha256": new_hash,
+        "candidate_client_path": packaged_client.relative_to(repair).as_posix(),
+    }
+
+
+def validate_candidate(candidate: Path) -> dict:
+    runtime_entries = []
+    client_hits = []
+    with zipfile.ZipFile(candidate) as outer:
+        names = outer.namelist()
+        runtime_entries = [n for n in names if n.lower().startswith("config/deck-downloader/")]
+        has_runtime_script = RUNTIME_SCRIPT in {n.lower() for n in names}
+
         for info in outer.infolist():
-            name = normalize(info.filename)
-            if not name.lower().endswith(".jar"):
+            if not info.filename.lower().endswith(".jar"):
                 continue
             with tempfile.NamedTemporaryFile(suffix=".jar", delete=False) as tmp:
                 tmp_path = Path(tmp.name)
                 tmp.write(outer.read(info))
             try:
                 if jar_has(tmp_path, PANE_CLASS) and jar_has(tmp_path, FRAME_CLASS):
-                    found.append(name)
+                    client_hits.append(info.filename)
             finally:
                 tmp_path.unlink(missing_ok=True)
-    return found
 
+    if not has_runtime_script:
+        raise RuntimeError("Final candidate ZIP is missing config/deck-downloader/deck_library_updater.py")
+    if not client_hits:
+        raise RuntimeError("Final candidate ZIP has no client JAR containing DeckDownloaderPane + MageFrame")
 
-def inspect_distribution(zip_path: Path) -> dict:
-    with zipfile.ZipFile(zip_path) as zf:
-        runtime = zip_runtime_entries(zf)
-    jars = nested_client_jars_with_pane(zip_path)
     return {
-        "runtime_entries": runtime,
-        "client_jars_with_pane": jars,
-        "has_runtime_script": any(normalize(x).lower().endswith(RUNTIME_SCRIPT) for x in runtime),
-        "has_patched_client_jar": bool(jars),
+        "runtime_entries": runtime_entries,
+        "client_jars_with_pane": client_hits,
+        "has_runtime_script": True,
+        "has_patched_client_jar": True,
     }
-
-
-def valid_distributions(source: Path) -> list[tuple[Path, dict]]:
-    result = []
-    for p in sorted((source / "Mage.Client" / "target").glob("*.zip")):
-        try:
-            details = inspect_distribution(p)
-        except (zipfile.BadZipFile, OSError):
-            continue
-        if details["has_runtime_script"] and details["has_patched_client_jar"]:
-            result.append((p, details))
-    return result
-
-
-def ensure_distribution(source: Path, reports: Path, build: dict) -> tuple[Path, dict, bool]:
-    existing = valid_distributions(source)
-    if existing:
-        p, d = max(existing, key=lambda x: x[0].stat().st_size)
-        return p, d, False
-
-    mvn = Path(str(build.get("maven", "")))
-    if not mvn.exists():
-        raise RuntimeError(f"Recorded Maven executable is missing: {mvn}")
-
-    print("[INFO] No distribution ZIP yet. XMage assembly is not bound to package.")
-    print("[STEP] Installing reactor artifacts needed by Mage.Client assembly...")
-    run(
-        [mvn, "-pl", "Mage.Client", "-am", "-DskipTests", "install"],
-        source,
-        reports / "maven-install-for-assembly.log",
-    )
-
-    print("[STEP] Generating official Mage.Client distribution with assembly:single...")
-    run(
-        [mvn, "-f", source / "Mage.Client" / "pom.xml", "-DskipTests", "assembly:single"],
-        source,
-        reports / "maven-client-assembly.log",
-    )
-
-    generated = valid_distributions(source)
-    if not generated:
-        raise RuntimeError(
-            "Official assembly completed but no ZIP contains both the Deck Downloader runtime "
-            "and the patched Mage.Client JAR"
-        )
-    p, d = max(generated, key=lambda x: x[0].stat().st_size)
-    return p, d, True
 
 
 def main() -> int:
@@ -166,8 +197,8 @@ def main() -> int:
     reports = work / "reports"
     output = work / "candidate-output"
 
-    print("=== XMage Community Patch - V1 DECK DOWNLOADER PACKAGE/SMOKE GATE v2 ===")
-    print("SAFE MODE: validates/generates artifacts in isolated workspace only.\n")
+    print("=== XMage Community Patch - V1 DECK DOWNLOADER PACKAGE/SMOKE GATE v3 ===")
+    print("SAFE MODE: isolated packaging only; active XMage is never touched.\n")
 
     build = load_json(reports / "port-build-result.json")
     if not build.get("build_ok") or build.get("build_returncode") != 0:
@@ -175,7 +206,7 @@ def main() -> int:
     print("[OK] Previous Maven build recorded successful")
 
     client_jar = find_compiled_client_jar(source)
-    print(f"[OK] Compiled client JAR contains DeckDownloaderPane + MageFrame: {client_jar}")
+    print(f"[OK] Known-good patched client JAR: {client_jar}")
 
     runtime = source / "Mage.Client" / "release" / "config" / "deck-downloader"
     py_files = sorted(runtime.glob("*.py"))
@@ -185,32 +216,34 @@ def main() -> int:
         py_compile.compile(str(py), doraise=True)
     print(f"[OK] Runtime Python syntax: {len(py_files)} files")
 
-    distribution, details, generated_now = ensure_distribution(source, reports, build)
-    print(f"[OK] Distribution ZIP: {distribution}")
-    print(f"[OK] Runtime entries packaged: {len(details['runtime_entries'])}")
-    print(f"[OK] Patched client JAR packaged: {details['client_jars_with_pane']}")
+    official_assembly = find_or_generate_official_assembly(source, reports, build)
+    print(f"[OK] Official assembly baseline SHA-256: {sha256(official_assembly)}")
 
     if output.exists():
         shutil.rmtree(output)
-    output.mkdir(parents=True)
-    candidate = output / "XMage_1.4.61V1_CommunityPatch_DeckDownloader_SMOKE_CANDIDATE.zip"
-    shutil.copy2(distribution, candidate)
+    candidate, repair_meta = create_repaired_candidate(
+        official_assembly, client_jar, runtime, work, output
+    )
+
+    validation = validate_candidate(candidate)
     candidate_hash = sha256(candidate)
+    print(f"[OK] Final candidate runtime entries: {len(validation['runtime_entries'])}")
+    print(f"[OK] Final candidate patched client JAR: {validation['client_jars_with_pane']}")
+    print(f"[OK] Candidate SHA-256: {candidate_hash}")
 
     manifest = {
-        "schema": 2,
+        "schema": 3,
         "status": "STATIC_SMOKE_PASSED_MANUAL_GUI_SMOKE_REQUIRED",
         "official_commit": build.get("official_commit"),
-        "assembly_generated_by_gate": generated_now,
+        "official_assembly": str(official_assembly),
+        "official_assembly_sha256": sha256(official_assembly),
         "compiled_client_jar": str(client_jar),
         "compiled_client_jar_sha256": sha256(client_jar),
-        "maven_distribution": str(distribution),
-        "maven_distribution_sha256": sha256(distribution),
         "candidate_zip": str(candidate),
         "candidate_sha256": candidate_hash,
         "runtime_python_files": [p.name for p in py_files],
-        "distribution_runtime_entries": details["runtime_entries"],
-        "distribution_client_jars_with_pane": details["client_jars_with_pane"],
+        **repair_meta,
+        **validation,
         "active_xmage_modified": False,
         "clean_v1_staging_modified": False,
         "v1_activation_allowed": False,
@@ -224,17 +257,16 @@ def main() -> int:
         "===========================================================",
         "",
         "STATIC SMOKE: PASSED",
-        "Compiled DeckDownloaderPane present: YES",
-        f"Runtime Python files validated: {len(py_files)}",
-        "Runtime packaged in official Mage.Client assembly: YES",
-        "Patched client JAR packaged in official Mage.Client assembly: YES",
-        f"Assembly generated during this gate: {generated_now}",
+        "Official XMage client assembly used as baseline: YES",
+        "Known-good patched client JAR explicitly injected: YES",
+        f"Runtime Python files validated/injected: {len(py_files)}",
+        "Final candidate re-opened and verified from ZIP bytes: YES",
         f"Candidate ZIP: {candidate}",
         f"Candidate SHA-256: {candidate_hash}",
         "",
         "NEXT GATE: isolated GUI launch and manual Deck Downloader smoke test.",
         "Active XMage was NOT modified.",
-        "Clean V1 staging was NOT modified.",
+        "Clean 1.4.61V1 staging was NOT modified.",
         "1.4.61V1 remains BLOCKED.",
     ]
     summary_path = reports / "RESUMEN_SMOKE_PACKAGE.txt"
@@ -242,7 +274,6 @@ def main() -> int:
 
     print("\n=== STATIC SMOKE PASSED ===")
     print(f"Candidate: {candidate}")
-    print(f"SHA-256: {candidate_hash}")
     print(f"Summary: {summary_path}")
     print("1.4.61V1 remains BLOCKED until isolated GUI smoke test.")
     return 0
