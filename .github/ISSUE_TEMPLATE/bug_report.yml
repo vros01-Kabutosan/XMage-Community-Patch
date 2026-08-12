@@ -1,0 +1,84 @@
+name: RC1 bug report
+description: Report a reproducible problem in XMage Community Patch 1.4.60-V3 RC1
+title: "[RC1 BUG] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing RC1. Please remove private information from logs and screenshots before submitting.
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package used
+      options:
+        - Complete Windows
+        - Client Windows
+        - Server Windows
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: Windows 11 24H2 x64
+    validations:
+      required: true
+  - type: input
+    id: java
+    attributes:
+      label: Java version
+      placeholder: Java 8u201 x64
+    validations:
+      required: true
+  - type: input
+    id: build
+    attributes:
+      label: XMage client/server build
+      placeholder: 2026-08-10 02:05
+    validations:
+      required: true
+  - type: input
+    id: display
+    attributes:
+      label: Resolution / Windows scaling
+      placeholder: 3840x2160 / 150%
+  - type: textarea
+    id: steps
+    attributes:
+      label: Minimal steps to reproduce
+      description: Number the exact actions needed to reproduce the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant anonymized log excerpt
+      description: Do not include credentials, cookies, usernames or private paths.
+      render: text
+  - type: textarea
+    id: card
+    attributes:
+      label: Card details (only for card-specific bugs)
+      description: Exact card name, set, collector number and failing zone.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmation
+      options:
+        - label: I confirmed Client and Server are from the same RC1 when both are involved.
+          required: true
+        - label: I removed private information from logs/screenshots.
+          required: true
