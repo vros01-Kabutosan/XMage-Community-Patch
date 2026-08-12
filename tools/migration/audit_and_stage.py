@@ -78,7 +78,7 @@ def download(url: str, dst: Path) -> None:
     print(f"[DOWNLOAD] {dst.name}")
     req = urllib.request.Request(
         url,
-        headers={"User-Agent": "XMage-Community-Patch-Migration-Audit/2.0"},
+        headers={"User-Agent": "XMage-Community-Patch-Migration-Audit/2.1"},
     )
     tmp = dst.with_suffix(dst.suffix + ".part")
     if tmp.exists():
@@ -147,13 +147,11 @@ def normalize_rel(rel: str) -> str | None:
     parts = [p for p in Path(rel).parts if p not in (".", "")]
     lower = [p.lower() for p in parts]
 
-    # Most important: align any path containing mage-client or mage-server.
     for anchor in PAYLOAD_ANCHORS:
         if anchor in lower:
             idx = lower.index(anchor)
             return "/".join(parts[idx:])
 
-    # Align launcher/runtime files regardless of wrapper folder.
     if parts and parts[-1] in TOP_LEVEL_XMAGE_FILES:
         return parts[-1]
 
@@ -165,6 +163,11 @@ def add_tree_to_manifest(
     result: dict[str, dict[str, object]],
     source_label: str,
 ) -> None:
+    # If payload_root() already descended *into* mage-client/mage-server,
+    # preserve that directory name explicitly. Otherwise normalization can
+    # discover the anchor from the relative path as before.
+    root_anchor = root.name.lower() if root.name.lower() in PAYLOAD_ANCHORS else None
+
     for base, dirs, files in os.walk(root):
         dirs.sort(key=str.lower)
         files.sort(key=str.lower)
@@ -173,7 +176,10 @@ def add_tree_to_manifest(
             if name == ".extracted-ok":
                 continue
             raw_rel = path.relative_to(root).as_posix()
-            logical = normalize_rel(raw_rel)
+            if root_anchor:
+                logical = f"{root.name}/{raw_rel}"
+            else:
+                logical = normalize_rel(raw_rel)
             if logical is None:
                 continue
             entry = {
@@ -292,8 +298,8 @@ def write_reports(report_dir: Path, rows, metadata: dict[str, object]) -> None:
         writer.writerows(rows)
 
     txt = [
-        "XMage Community Patch - RC1 migration audit v2",
-        "===================================================",
+        "XMage Community Patch - RC1 migration audit v2.1",
+        "=====================================================",
         "",
         "This audit DOES NOT modify your active XMage installation.",
         "RC1 nested Client/Server packages were expanded and XMage paths normalized.",
@@ -325,7 +331,7 @@ def main() -> int:
     v3_zip = downloads / "upstream-v3.zip"
     v1_zip = downloads / "upstream-v1.zip"
 
-    print("=== XMage Community Patch - PROTECTED MIGRATION AUDIT v2 ===")
+    print("=== XMage Community Patch - PROTECTED MIGRATION AUDIT v2.1 ===")
     print("SAFE MODE: your active XMage installation will NOT be touched.\n")
 
     download(RC1_URL, rc1_zip)
@@ -361,7 +367,6 @@ def main() -> int:
         },
     )
 
-    # Keep clean 1.4.61V1 candidate ONLY in staging. Never overlay RC1 here.
     safe_extract(v1_zip, staging)
     v1_root = payload_root(staging)
     v1_manifest = official_manifest(v1_root)
