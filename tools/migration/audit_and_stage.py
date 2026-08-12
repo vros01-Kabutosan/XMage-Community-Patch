@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Safe migration audit for XMage Community Patch.
 
-This tool NEVER overwrites an active XMage installation. It downloads the
-published RC1 Complete package plus clean official XMage releases, extracts them
-into an isolated workspace, compares RC1 against the official 1.4.60V3 base,
-and prepares a clean 1.4.61V1 staging tree for later patch reconstruction.
+This tool NEVER overwrites an active XMage installation.
+
+It downloads/verifies the published RC1 Complete package and clean official
+XMage releases, expands the RC1 nested Client/Server ZIPs, normalizes the
+internal XMage directory layout, compares RC1 against official 1.4.60V3, and
+prepares a clean 1.4.61V1 staging tree for later patch reconstruction.
 
 Python 3 standard library only.
 """
@@ -16,7 +18,6 @@ import hashlib
 import json
 import os
 import shutil
-import sys
 import time
 import urllib.request
 import zipfile
@@ -44,6 +45,13 @@ EXPECTED_SHA256 = {
 
 WORKSPACE_NAME = "migration-workspace"
 CHUNK = 1024 * 1024
+PAYLOAD_ANCHORS = ("mage-client", "mage-server")
+TOP_LEVEL_XMAGE_FILES = {
+    "installed.properties",
+    "run-launcher-and-wait.cmd",
+    "run-LAUNCHER.cmd",
+    "XMageLauncher-0.3.8.jar",
+}
 
 
 def sha256_file(path: Path) -> str:
@@ -68,7 +76,10 @@ def download(url: str, dst: Path) -> None:
         dst.unlink()
 
     print(f"[DOWNLOAD] {dst.name}")
-    req = urllib.request.Request(url, headers={"User-Agent": "XMage-Community-Patch-Migration-Audit/1.0"})
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": "XMage-Community-Patch-Migration-Audit/2.0"},
+    )
     tmp = dst.with_suffix(dst.suffix + ".part")
     if tmp.exists():
         tmp.unlink()
@@ -97,15 +108,15 @@ def download(url: str, dst: Path) -> None:
     print(f"[OK] SHA-256 verified: {dst.name}")
 
 
-def safe_extract(zip_path: Path, dest: Path) -> None:
+def safe_extract(zip_path: Path, dest: Path, force: bool = False) -> None:
     marker = dest / ".extracted-ok"
-    if marker.exists():
+    if marker.exists() and not force:
         print(f"[OK] Reusing extracted {dest.name}")
         return
     if dest.exists():
         shutil.rmtree(dest)
     dest.mkdir(parents=True, exist_ok=True)
-    print(f"[EXTRACT] {zip_path.name}")
+    print(f"[EXTRACT] {zip_path.name} -> {dest.name}")
     with zipfile.ZipFile(zip_path) as zf:
         root = dest.resolve()
         for info in zf.infolist():
@@ -117,10 +128,10 @@ def safe_extract(zip_path: Path, dest: Path) -> None:
 
 
 def payload_root(extracted: Path) -> Path:
-    """Strip harmless single wrapper directories while preserving XMage layout."""
+    """Remove harmless single wrapper directories only."""
     ignored = {".extracted-ok"}
     current = extracted
-    for _ in range(4):
+    for _ in range(6):
         entries = [p for p in current.iterdir() if p.name not in ignored]
         dirs = [p for p in entries if p.is_dir()]
         files = [p for p in entries if p.is_file()]
@@ -131,8 +142,29 @@ def payload_root(extracted: Path) -> Path:
     return current
 
 
-def manifest(root: Path) -> dict[str, dict[str, object]]:
-    result: dict[str, dict[str, object]] = {}
+def normalize_rel(rel: str) -> str | None:
+    """Map different packaging wrappers to one logical XMage path."""
+    parts = [p for p in Path(rel).parts if p not in (".", "")]
+    lower = [p.lower() for p in parts]
+
+    # Most important: align any path containing mage-client or mage-server.
+    for anchor in PAYLOAD_ANCHORS:
+        if anchor in lower:
+            idx = lower.index(anchor)
+            return "/".join(parts[idx:])
+
+    # Align launcher/runtime files regardless of wrapper folder.
+    if parts and parts[-1] in TOP_LEVEL_XMAGE_FILES:
+        return parts[-1]
+
+    return None
+
+
+def add_tree_to_manifest(
+    root: Path,
+    result: dict[str, dict[str, object]],
+    source_label: str,
+) -> None:
     for base, dirs, files in os.walk(root):
         dirs.sort(key=str.lower)
         files.sort(key=str.lower)
@@ -140,12 +172,66 @@ def manifest(root: Path) -> dict[str, dict[str, object]]:
             path = Path(base) / name
             if name == ".extracted-ok":
                 continue
-            rel = path.relative_to(root).as_posix()
-            result[rel] = {
+            raw_rel = path.relative_to(root).as_posix()
+            logical = normalize_rel(raw_rel)
+            if logical is None:
+                continue
+            entry = {
                 "sha256": sha256_file(path),
                 "size": path.stat().st_size,
+                "source": source_label,
+                "source_path": raw_rel,
             }
+            old = result.get(logical)
+            if old and old["sha256"] != entry["sha256"]:
+                raise RuntimeError(
+                    f"Conflicting files map to the same logical path: {logical}\n"
+                    f"  old: {old['source']}::{old['source_path']}\n"
+                    f"  new: {source_label}::{raw_rel}"
+                )
+            result[logical] = entry
+
+
+def official_manifest(root: Path) -> dict[str, dict[str, object]]:
+    result: dict[str, dict[str, object]] = {}
+    add_tree_to_manifest(root, result, "official")
+    if not result:
+        raise RuntimeError("Could not locate mage-client/mage-server payload in official package")
     return result
+
+
+def community_manifest(rc1_root: Path, expanded_dir: Path) -> tuple[dict[str, dict[str, object]], list[str]]:
+    """Expand nested RC1 Client/Server packages and build one logical manifest."""
+    result: dict[str, dict[str, object]] = {}
+    nested = []
+
+    candidates = []
+    for p in rc1_root.rglob("*.zip"):
+        n = p.name.lower()
+        if "xmage_community_patch" in n and ("client_windows" in n or "server_windows" in n):
+            candidates.append(p)
+
+    if not candidates:
+        raise RuntimeError(
+            "RC1 Complete package does not contain the expected nested Client/Server ZIPs"
+        )
+
+    if expanded_dir.exists():
+        shutil.rmtree(expanded_dir)
+    expanded_dir.mkdir(parents=True, exist_ok=True)
+
+    for index, nested_zip in enumerate(sorted(candidates, key=lambda p: p.name.lower()), start=1):
+        label = "client" if "client_windows" in nested_zip.name.lower() else "server"
+        dest = expanded_dir / f"{index:02d}-{label}"
+        safe_extract(nested_zip, dest, force=True)
+        root = payload_root(dest)
+        add_tree_to_manifest(root, result, f"community-{label}")
+        nested.append(str(nested_zip))
+        print(f"[NORMALIZE] {label}: {root}")
+
+    if not result:
+        raise RuntimeError("Nested RC1 packages were extracted but no XMage payload was detected")
+    return result, nested
 
 
 def compare(base: dict[str, dict[str, object]], community: dict[str, dict[str, object]]):
@@ -169,21 +255,23 @@ def compare(base: dict[str, dict[str, object]], community: dict[str, dict[str, o
             "community_sha256": c["sha256"] if c else "",
             "upstream_size": b["size"] if b else "",
             "community_size": c["size"] if c else "",
+            "upstream_source_path": b["source_path"] if b else "",
+            "community_source_path": c["source_path"] if c else "",
         })
     return rows
 
 
-def write_reports(report_dir: Path, rows, roots: dict[str, str]) -> None:
+def write_reports(report_dir: Path, rows, metadata: dict[str, object]) -> None:
     report_dir.mkdir(parents=True, exist_ok=True)
-    counts = {}
+    counts: dict[str, int] = {}
     for row in rows:
         counts[row["status"]] = counts.get(row["status"], 0) + 1
 
     json_report = {
-        "schema": 1,
+        "schema": 2,
         "generated_unix": int(time.time()),
-        "comparison": "Community RC1 Complete vs official xmage_1.4.60V3 binary release",
-        "roots": roots,
+        "comparison": "Community RC1 nested Client/Server payload vs official xmage_1.4.60V3",
+        "metadata": metadata,
         "counts": counts,
         "attention": [r for r in rows if r["status"] != "IDENTICAL"],
     }
@@ -193,18 +281,22 @@ def write_reports(report_dir: Path, rows, roots: dict[str, str]) -> None:
 
     fields = [
         "path", "status", "upstream_sha256", "community_sha256",
-        "upstream_size", "community_size",
+        "upstream_size", "community_size", "upstream_source_path",
+        "community_source_path",
     ]
-    with (report_dir / "rc1-vs-upstream-v3.csv").open("w", encoding="utf-8-sig", newline="") as f:
+    with (report_dir / "rc1-vs-upstream-v3.csv").open(
+        "w", encoding="utf-8-sig", newline=""
+    ) as f:
         writer = csv.DictWriter(f, fieldnames=fields)
         writer.writeheader()
         writer.writerows(rows)
 
     txt = [
-        "XMage Community Patch - RC1 migration audit",
-        "================================================",
+        "XMage Community Patch - RC1 migration audit v2",
+        "===================================================",
         "",
         "This audit DOES NOT modify your active XMage installation.",
+        "RC1 nested Client/Server packages were expanded and XMage paths normalized.",
         "",
     ]
     for key in ("MODIFIED", "COMMUNITY_ONLY", "UPSTREAM_ONLY", "IDENTICAL"):
@@ -213,7 +305,9 @@ def write_reports(report_dir: Path, rows, roots: dict[str, str]) -> None:
     for row in rows:
         if row["status"] != "IDENTICAL":
             txt.append(f"[{row['status']}] {row['path']}")
-    (report_dir / "RESUMEN_AUDITORIA.txt").write_text("\n".join(txt) + "\n", encoding="utf-8")
+    (report_dir / "RESUMEN_AUDITORIA.txt").write_text(
+        "\n".join(txt) + "\n", encoding="utf-8"
+    )
 
 
 def main() -> int:
@@ -221,6 +315,7 @@ def main() -> int:
     workspace = script_dir / WORKSPACE_NAME
     downloads = workspace / "downloads"
     extracted = workspace / "extracted"
+    expanded = workspace / "expanded-community"
     reports = workspace / "reports"
     staging = workspace / "staging" / "xmage_1.4.61V1-clean"
 
@@ -230,7 +325,7 @@ def main() -> int:
     v3_zip = downloads / "upstream-v3.zip"
     v1_zip = downloads / "upstream-v1.zip"
 
-    print("=== XMage Community Patch - PROTECTED MIGRATION AUDIT ===")
+    print("=== XMage Community Patch - PROTECTED MIGRATION AUDIT v2 ===")
     print("SAFE MODE: your active XMage installation will NOT be touched.\n")
 
     download(RC1_URL, rc1_zip)
@@ -244,39 +339,61 @@ def main() -> int:
 
     rc1_root = payload_root(rc1_extract)
     v3_root = payload_root(v3_extract)
-    print(f"[SCAN] Community root: {rc1_root}")
-    print(f"[SCAN] Upstream V3 root: {v3_root}")
+    print(f"[SCAN] RC1 Complete root: {rc1_root}")
+    print(f"[SCAN] Official V3 root:  {v3_root}")
 
-    community_manifest = manifest(rc1_root)
-    upstream_manifest = manifest(v3_root)
-    rows = compare(upstream_manifest, community_manifest)
-    write_reports(reports, rows, {
-        "community_rc1": str(rc1_root),
-        "upstream_v3": str(v3_root),
-    })
+    community, nested_zips = community_manifest(rc1_root, expanded)
+    upstream = official_manifest(v3_root)
 
-    # Prepare clean 1.4.61V1 candidate ONLY in staging. Never overlay RC1 here.
+    print(f"[OK] Logical RC1 payload files: {len(community)}")
+    print(f"[OK] Logical official V3 files: {len(upstream)}")
+
+    rows = compare(upstream, community)
+    write_reports(
+        reports,
+        rows,
+        {
+            "rc1_complete_root": str(rc1_root),
+            "official_v3_root": str(v3_root),
+            "nested_rc1_packages": nested_zips,
+            "logical_rc1_files": len(community),
+            "logical_upstream_files": len(upstream),
+        },
+    )
+
+    # Keep clean 1.4.61V1 candidate ONLY in staging. Never overlay RC1 here.
     safe_extract(v1_zip, staging)
     v1_root = payload_root(staging)
+    v1_manifest = official_manifest(v1_root)
     (reports / "staging-info.json").write_text(
-        json.dumps({
-            "schema": 1,
-            "upstream_tag": "xmage_1.4.61V1",
-            "upstream_commit": "105d560ece2939d03fe6d052d3479a91c04ca4b2",
-            "staging_root": str(v1_root),
-            "status": "CLEAN_UPSTREAM_ONLY_DO_NOT_ACTIVATE",
-        }, indent=2),
+        json.dumps(
+            {
+                "schema": 2,
+                "upstream_tag": "xmage_1.4.61V1",
+                "upstream_commit": "105d560ece2939d03fe6d052d3479a91c04ca4b2",
+                "staging_root": str(v1_root),
+                "logical_payload_files": len(v1_manifest),
+                "status": "CLEAN_UPSTREAM_ONLY_DO_NOT_ACTIVATE",
+            },
+            indent=2,
+        ),
         encoding="utf-8",
     )
 
-    attention = [r for r in rows if r["status"] != "IDENTICAL"]
+    counts: dict[str, int] = {}
+    for row in rows:
+        counts[row["status"]] = counts.get(row["status"], 0) + 1
+
     print("\n=== DONE ===")
-    print(f"Files requiring review: {len(attention)}")
+    print(f"IDENTICAL:      {counts.get('IDENTICAL', 0)}")
+    print(f"MODIFIED:       {counts.get('MODIFIED', 0)}")
+    print(f"COMMUNITY_ONLY: {counts.get('COMMUNITY_ONLY', 0)}")
+    print(f"UPSTREAM_ONLY:  {counts.get('UPSTREAM_ONLY', 0)}")
     print(f"Report: {reports / 'RESUMEN_AUDITORIA.txt'}")
     print(f"JSON:   {reports / 'rc1-vs-upstream-v3.json'}")
     print(f"CSV:    {reports / 'rc1-vs-upstream-v3.csv'}")
-    print(f"Clean V1 staging prepared at: {v1_root}")
-    print("\nIMPORTANT: V1 remains BLOCKED. Nothing has been copied into your active XMage.")
+    print(f"Clean V1 staging: {v1_root}")
+    print("\nIMPORTANT: V1 remains BLOCKED. Nothing was copied into your active XMage.")
     return 0
 
 
