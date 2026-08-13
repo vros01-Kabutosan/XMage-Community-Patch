@@ -23,6 +23,27 @@ Final gate result:
 - Rollback path: preserved and available
 - Cleanup: intentionally NOT performed
 
+## Printing / edition selector recovery
+
+The Community Patch printing selector has now also been recovered and visually validated on the active 1.4.61V1 client.
+
+Validated implementation: **Printing Selector V6**.
+
+Confirmed behavior:
+
+- `Elegir edición...` is available in Deck Editor.
+- Printing list and set search work.
+- Selected printing shows a card preview.
+- Choosing a printing updates all matching copies of that card in the deck.
+- Normal client/server launch remains functional after activation.
+
+Canonical port tooling:
+
+- `tools/migration/printing_selector_port_source_v6_exact_old.py`
+- `tools/migration/RUN_PRINTING_SELECTOR_PORT_SOURCE_V6_EXACT_OLD_WINDOWS.cmd`
+
+See `docs/PRINTING_SELECTOR_V6_VALIDATED.md` for the validation record.
+
 ## Safety policy
 
 Do not delete the verified rollback material yet. Keep at least one known-good backup until the 1.4.61V1-based Community Patch has had normal-use testing and the next release candidate has been validated.
@@ -37,8 +58,8 @@ All new Community Patch development should use the successfully migrated 1.4.61V
 
 ## Next phase
 
-1. Audit Community Patch features against 1.4.61V1 upstream behavior.
-2. Classify each feature as KEEP / ADAPT / DROP / REIMPLEMENT.
-3. Port features incrementally, starting with Deck Downloader integration.
-4. Build and smoke-test after each meaningful integration step.
+1. Continue normal-use testing of the validated 1.4.61V1 Community Patch state.
+2. Audit remaining Community Patch features against 1.4.61V1 upstream behavior.
+3. Classify each remaining feature as KEEP / ADAPT / DROP / REIMPLEMENT.
+4. Port features incrementally with build and smoke-test gates.
 5. Produce a new 1.4.61V1-based release candidate only after the audit and port are clean.
