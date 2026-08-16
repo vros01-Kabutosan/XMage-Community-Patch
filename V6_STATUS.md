@@ -2,21 +2,22 @@
 
 ## Base rule
 
-The Community Patch must be built from the stable XMage base **after the Hobbit integration**. The current reference build uses the corresponding XMage **1.4.61** modules (including Hobbit content). Do not roll the project back to 1.4.60V3 and do not mix unrelated experimental upstream changes into this line.
+The production base is the user's **last known good local XMage build**: the post-Hobbit build in which the stack is already inverted and the game is stable during real play.
 
-The post-Hobbit stable base is the production foundation. Experimental work must remain isolated until it has been ported and tested against this exact base.
+This exact build is the source of truth. Do not replace it with 1.4.60V3, a newer upstream branch, or an experimental V6 package merely because the version number looks newer. The version identifier and commit/hash of the local last-good build must be recorded before any new change is applied.
+
+## Integration rule
+
+All other improvements are currently considered pending unless they are verified in that last-good build. They must be added one at a time as isolated, versioned patches, with a backup and rollback path. A change is not considered integrated until it has been tested in the game.
 
 ## Current state
 
-- The post-Hobbit stable base is the accepted production foundation.
-- The published V6 client package is a compiled reference build of that base.
-- The random AI deck selector is not present in the published V6 package and must be implemented as a source patch against the post-Hobbit base.
-- Existing community improvements must be ported as explicit, versioned patches.
-
-## Non-negotiable behavior
-
-The AI must select a legal downloaded deck from the selected Standard, Pioneer, or Modern pool. It may try at most three candidates. If loading fails, it must immediately use the known working fallback deck and allow the game to start.
+- Last known good base: post-Hobbit local build with inverted stack.
+- Confirmed working baseline: the user's current playable installation.
+- The random AI deck selector is not confirmed in the baseline and must be implemented without changing the stack.
+- The selector must use downloaded legal decks from the selected Standard, Pioneer, or Modern pool.
+- Maximum attempts: three. On failure, use the known working fixed deck immediately so the game always starts.
 
 ## Preservation requirements
 
-Do not remove the stack UI improvements, edition/art selector, card and image fixes, deck downloader, 4K stability work, or client/server compatibility while reconstructing the source build.
+Do not alter the inverted stack, card and image fixes, edition/art selector, deck downloader, 4K stability, client/server compatibility, or any other baseline behavior while implementing the AI selector.
