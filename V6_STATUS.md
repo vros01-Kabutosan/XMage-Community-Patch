@@ -1,10 +1,14 @@
 # XMage Community Patch V6 status
 
+## Base rule
+
+The Community Patch must always be built from the stable XMage **1.4.60V3** base. Do not merge the latest upstream branch, 1.4.61, or experimental V6 changes into the stable line. Experimental work must remain isolated until it has been ported and tested against 1.4.60V3.
+
 ## Current state
 
-- Upstream XMage source has been recovered locally.
-- The published V6 client package is a compiled reference build.
-- The random AI deck selector is not present in the published V6 package and must be implemented in source.
+- The stable 1.4.60V3 base is the only accepted production foundation.
+- The published V6 client package is a compiled reference build, not the new base.
+- The random AI deck selector is not present in the published V6 package and must be implemented as a source patch against 1.4.60V3.
 - Existing community improvements must be ported as explicit, versioned patches.
 
 ## Non-negotiable behavior
