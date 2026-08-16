@@ -4,11 +4,11 @@
 
 The production base is the user's **last known good local XMage build**: the post-Hobbit build in which the stack is already inverted, floating, and the phases are shown below it. It is stable during real play.
 
-This exact build is the source of truth. Do not replace it with 1.4.60V3, a newer upstream branch, or an experimental V6 package merely because the version number looks newer. The version identifier and commit/hash of the local last-good build must be recorded before any new change is applied.
+This exact build is the source of truth. Do not replace it with 1.4.60V3, a newer upstream branch, or an experimental V6 package merely because the version number looks newer. Record the version identifier and commit/hash of the last-good build before applying any new change.
 
 ## Integration rule
 
-All other improvements are pending unless verified in that last-good build. They must be added one at a time as isolated, versioned patches, with a backup and rollback path. A change is not integrated until it has been tested in the game.
+The stack is already complete and is part of the stable baseline. Future work starts with the AI. Every new improvement must be isolated, versioned, backed up, and tested in the game before being accepted.
 
 ## Roadmap
 
@@ -21,7 +21,7 @@ Implement only the AI deck selector:
 - maximum three load attempts;
 - on failure, immediately use the known working fixed deck;
 - never block the game from starting;
-- do not modify the stack or any visual component.
+- do not modify the completed stack or any visual component.
 
 ### Phase 2 — Stability
 
@@ -37,4 +37,4 @@ Only much later: AI memory, threat tracking, and hand-reading behavior. This is 
 
 ## Preservation requirements
 
-Do not alter the inverted/floating stack, phases below it, card and image fixes, edition/art selector, deck downloader, 4K stability, client/server compatibility, or any other baseline behavior while implementing Phase 1.
+Do not alter the completed inverted/floating stack, phases below it, card and image fixes, edition/art selector, deck downloader, 4K stability, client/server compatibility, or any other baseline behavior while implementing Phase 1.
