@@ -189,3 +189,29 @@ If a command cannot create its log, the operation must stop before modifying fil
 ### Regla estricta de logs
 
 **Sin log en `J:\mtg\_LOGS`, no se ejecuta ni se acepta ninguna operación.**
+
+
+## 13. Version naming is mandatory
+
+Every patch, checkpoint, experiment, and portable package must receive a unique name according to its scope:
+
+- Small corrective patch: incremental numbering such as `1.1`, `1.2`, `1.3`.
+- Large architectural change or major checkpoint: major numbering such as `v-1`, `v-2`, `v-3`.
+- RC milestones remain explicit: `RC1`, `RC1.1`, and later milestones only when promoted by the contract.
+- Never reuse a version name for different contents.
+- Never create ambiguous duplicates such as `(1)`, `(2)`, `final-final`, or unnamed replacements.
+- The version name must appear in the folder, branch, package, manifest, log, and test report.
+
+A version number describes the scope of the change; it must not be advanced merely to hide an unvalidated failure.
+
+### Regla estricta de nomenclatura
+
+Cada parche, checkpoint, experimento y paquete portable tendrá un nombre único según su alcance:
+
+- Parche pequeño: numeración incremental (`1.1`, `1.2`, `1.3`).
+- Cambio grande o checkpoint arquitectónico: versión mayor (`v-1`, `v-2`, `v-3`).
+- Hitos RC explícitos: `RC1`, `RC1.1`.
+- Nunca se reutilizan nombres ni se crean duplicados ambiguos como `(1)`, `(2)` o `final-final`.
+- El nombre debe coincidir en carpeta, rama, paquete, manifest, log y prueba.
+
+**La nomenclatura identifica el alcance real del cambio; no se usa para ocultar un fallo no validado.**
