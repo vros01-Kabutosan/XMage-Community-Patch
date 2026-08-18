@@ -93,7 +93,6 @@ Los decks, imágenes, preferencias y logs se separan de binarios y código. No s
 
 El checkpoint actual solo podrá congelarse como **RC1.1** cuando la pestaña de IA esté restaurada y todo el comportamiento base esté validado. Si la fuente exacta, la pareja cliente/servidor o el rollback no están claros, se detiene el trabajo: no se adivina ni se parchea a ciegas.
 
-
 ## 8. Unlimited experiments, zero impact
 
 The project may test one thousand mods, patches, architectural changes, or AI experiments. Success or failure is acceptable inside the experiment sandbox.
@@ -119,19 +118,6 @@ The stable checkpoint is the protected reference. Experiments are disposable; th
 
 **A failed mod may lose its own sandbox. It may never lose the project, the stable installation, the last checkpoint, or the user's accumulated work.**
 
----
-
-## 8. Experimentos ilimitados, impacto cero
-
-El proyecto puede probar mil mods, parches o experimentos. Que un experimento funcione o falle es aceptable dentro de su sandbox.
-
-Lo inadmisible es que un fallo dañe, sobrescriba, contamine, rebaje o vuelva irrecuperable la última instalación buena.
-
-Cada experimento debe tener clon aislado, backup, hash, manifest, prueba real y rollback. Si falla, se marca como **FAILED**, se conservan sus logs y se abandona o aísla ese clon. La instalación estable nunca se repara aplicando parches de emergencia encima de un experimento fallido.
-
-**Un mod fallido puede perder su propio sandbox. Nunca puede perder el proyecto, la instalación estable, el último checkpoint ni el trabajo acumulado.**
-
-
 ## 9. RC1 and RC1.1 are protected shields
 
 **RC1** is the protected original stable baseline. It is never modified by experiments.
@@ -145,7 +131,6 @@ No future experiment may write directly into RC1 or RC1.1. If an experiment succ
 ### Regla definitiva
 
 **RC1 y RC1.1 son blindajes protegidos. Los experimentos viven fuera de ellos.**
-
 
 ## 10. Separate protected branches
 
@@ -164,7 +149,6 @@ The protected branches will be created only from real checkpoint commits contain
 
 **RC1 y RC1.1 tendrán ramas protegidas separadas cuando sus clones reales estén incorporados.**
 
-
 ## 11. RC1.1 creation gate: AI is mandatory
 
 The current working clone must not be labelled, tagged, branched, or promoted as RC1.1 until the normal AI option has been restored.
@@ -182,3 +166,26 @@ Until every item passes, the working clone remains an experiment and RC1.1 does 
 ### Puerta de entrada RC1.1
 
 **Sin IA normal restaurada y probada en una partida real, no existe RC1.1 ni puede crearse su blindaje.**
+
+## 12. Centralized logging is mandatory
+
+Every diagnostic, inventory, audit, backup, copy, migration, repair, validation, launch, rollback, or experiment command must write a log to the centralized directory:
+
+`J:\mtg\_LOGS`
+
+No operational action is considered complete without a corresponding log file containing:
+
+- timestamp;
+- command or operation name;
+- source and destination paths when applicable;
+- result and exit code;
+- errors or warnings;
+- relevant counts, sizes, and hashes.
+
+Logs inside immutable backups must remain inside those backups to preserve their manifests. New operational logs belong in `J:\mtg\_LOGS`.
+
+If a command cannot create its log, the operation must stop before modifying files.
+
+### Regla estricta de logs
+
+**Sin log en `J:\mtg\_LOGS`, no se ejecuta ni se acepta ninguna operación.**
