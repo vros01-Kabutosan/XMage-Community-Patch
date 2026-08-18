@@ -92,3 +92,41 @@ No se aceptará ningún cambio sin verificar launcher oficial, pareja cliente/se
 Los decks, imágenes, preferencias y logs se separan de binarios y código. No se mezclan instalaciones oficiales, beta, experimentales o comunitarias.
 
 El checkpoint actual solo podrá congelarse como **RC1.1** cuando la pestaña de IA esté restaurada y todo el comportamiento base esté validado. Si la fuente exacta, la pareja cliente/servidor o el rollback no están claros, se detiene el trabajo: no se adivina ni se parchea a ciegas.
+
+
+## 8. Unlimited experiments, zero impact
+
+The project may test one thousand mods, patches, architectural changes, or AI experiments. Success or failure is acceptable inside the experiment sandbox.
+
+What is forbidden is for any failed experiment to damage, overwrite, contaminate, downgrade, or make unrecoverable the last known-good installation.
+
+For every experiment, the workflow is mandatory:
+
+1. Freeze the current known-good checkpoint.
+2. Create an isolated clone or branch.
+3. Record the base hash and a complete manifest.
+4. Apply exactly one experimental change or one clearly defined change set.
+5. Run automated checks and a real-game smoke test.
+6. If it fails, mark the experiment **FAILED**, preserve its logs for diagnosis, and discard or quarantine the clone.
+7. Restore or continue from the untouched known-good checkpoint.
+8. Never repair the stable installation by layering emergency fixes over a failed experiment.
+
+No experiment is allowed to rely on manual memory, undocumented copying, mixed folders, or a supposedly harmless overwrite. A change is not accepted because it compiles, opens once, or appears visually correct. It is accepted only after it passes the full promotion checklist and can be rolled back.
+
+The stable checkpoint is the protected reference. Experiments are disposable; the reference is not.
+
+### Absolute rule
+
+**A failed mod may lose its own sandbox. It may never lose the project, the stable installation, the last checkpoint, or the user's accumulated work.**
+
+---
+
+## 8. Experimentos ilimitados, impacto cero
+
+El proyecto puede probar mil mods, parches o experimentos. Que un experimento funcione o falle es aceptable dentro de su sandbox.
+
+Lo inadmisible es que un fallo dañe, sobrescriba, contamine, rebaje o vuelva irrecuperable la última instalación buena.
+
+Cada experimento debe tener clon aislado, backup, hash, manifest, prueba real y rollback. Si falla, se marca como **FAILED**, se conservan sus logs y se abandona o aísla ese clon. La instalación estable nunca se repara aplicando parches de emergencia encima de un experimento fallido.
+
+**Un mod fallido puede perder su propio sandbox. Nunca puede perder el proyecto, la instalación estable, el último checkpoint ni el trabajo acumulado.**
