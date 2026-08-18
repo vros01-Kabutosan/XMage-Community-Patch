@@ -145,3 +145,21 @@ No future experiment may write directly into RC1 or RC1.1. If an experiment succ
 ### Regla definitiva
 
 **RC1 y RC1.1 son blindajes protegidos. Los experimentos viven fuera de ellos.**
+
+
+## 10. Separate protected branches
+
+When the real checkpoint payloads are present, the repository will maintain separate protected branches:
+
+- `protected/rc1`: immutable original RC1 baseline.
+- `protected/rc1.1`: immutable corrected and validated RC1.1 clone.
+
+They must not be merged into one another and must not be used as development branches. `main` may contain documentation and project coordination, but it is not a substitute for either protected checkpoint.
+
+Future experiments use new branches derived from the appropriate protected checkpoint, for example `experiment/<description>`. Promotion to a new protected checkpoint requires the full validation contract.
+
+The protected branches will be created only from real checkpoint commits containing the corresponding verified payload. Empty placeholder branches are not considered protection.
+
+### Regla de ramas
+
+**RC1 y RC1.1 tendrán ramas protegidas separadas cuando sus clones reales estén incorporados.**
