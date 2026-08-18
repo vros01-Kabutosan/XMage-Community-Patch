@@ -215,3 +215,24 @@ Cada parche, checkpoint, experimento y paquete portable tendrá un nombre único
 - El nombre debe coincidir en carpeta, rama, paquete, manifest, log y prueba.
 
 **La nomenclatura identifica el alcance real del cambio; no se usa para ocultar un fallo no validado.**
+
+
+## 14. Download links must be functional
+
+A release or checkpoint is not considered delivered until every published download link has been tested from a clean session.
+
+For every link, the project must verify:
+
+- the URL resolves without authentication or hidden workspace access;
+- the download starts directly;
+- the complete file is received;
+- the filename and size are correct;
+- the SHA-256 matches the published manifest;
+- the archive extracts successfully;
+- the extracted installation launches from a clean destination.
+
+Broken, expired, text-only, blocked, partial, or unverified links must never be presented as release links.
+
+### Regla estricta de enlaces
+
+**Un enlace no se entrega como funcional hasta probar que descarga el paquete completo, coincide con su SHA-256 y permite restaurar la instalación desde cero.**
