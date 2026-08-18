@@ -1,0 +1,94 @@
+# RC1 Protection Contract
+
+Status: **MANDATORY / NON-NEGOTIABLE**  
+Applies to: XMage Community Patch RC1 and every future patch, mod, migration, or experiment.
+
+## 1. Stable installation is sacred
+
+The known-good RC1 installation is the source of truth. No future change may overwrite, mutate, or mix with it directly.
+
+The stable installation must remain independently playable through the official launcher exactly as the original base installation: same client/server pairing, launcher flow, configuration, 4 GB memory, 4K UI scaling, stack, edition selector, deck downloader, and all previously validated behavior.
+
+## 2. Every change is isolated
+
+Every mod or experiment must be applied to a separate clone, branch, or checkpoint. The working stable installation is never used as the experiment area.
+
+No files may be copied between unrelated XMage installations unless the file is explicitly classified as user data and its origin is recorded.
+
+Never mix:
+
+- client and server binaries from different builds;
+- official, beta, experimental, or community-patch directories;
+- launcher configuration from one installation with binaries from another;
+- user data with replaceable program files.
+
+## 3. Automatic rollback is mandatory
+
+Before any change:
+
+1. Create a complete recoverable backup.
+2. Record the exact base version, client/server build identifiers, launcher version, Java runtime, configuration, and hashes.
+3. Create a named checkpoint.
+
+If a change fails any validation, the system must immediately return to the last known-good checkpoint. Debugging must continue in the isolated clone; the stable checkpoint must not remain broken.
+
+A failed experiment may never cause several days of reconstruction. The rollback path must be tested before the experiment is accepted.
+
+## 4. Promotion requires proof
+
+A change may become the next checkpoint only after all of these pass:
+
+- official launcher starts normally;
+- client and server are the exact compatible pair;
+- local connection works;
+- normal AI option is present and playable;
+- 4 GB memory configuration is preserved;
+- 4K UI scaling is preserved;
+- stack and phases remain correct;
+- edition selector works;
+- deck downloader works;
+- existing user data remains recoverable;
+- no new configuration, launcher, or path regression appears;
+- a real game completes successfully.
+
+Compilation or one successful launch is not sufficient.
+
+## 5. User data is separate
+
+Decks, card images, logs, preferences, and other user data must be stored and migrated separately from replaceable binaries and source. Missing user data must never be treated as permission to rebuild or overwrite the stable program.
+
+## 6. Immutable checkpoint rule
+
+The last validated RC1 checkpoint is immutable. Once accepted, it receives:
+
+- a unique version name;
+- a commit or tag;
+- a manifest;
+- SHA-256 hashes;
+- a backup;
+- a rollback procedure;
+- a test report.
+
+For the current migration, the first protected checkpoint is **RC1.1**. It may only be created after the AI option and all required baseline behavior are restored and validated.
+
+## 7. Stop condition
+
+If the exact source, base build, client/server pair, configuration, or rollback path is uncertain, work stops. No guessed patch, replacement build, beta server, or unrelated installation may be used to continue.
+
+This contract exists to prevent a failed mod from consuming days of recovery work again.
+
+---
+
+# Contrato de protección RC1
+
+Estado: **OBLIGATORIO / NO NEGOCIABLE**
+
+La instalación estable de RC1 es sagrada. Ningún mod futuro puede sobrescribirla, mezclarla ni modificarla directamente.
+
+Todo experimento se realiza en un clon aislado con backup completo, versión identificada, hashes y rollback probado. Si falla una sola prueba, vuelve automáticamente al último checkpoint bueno. La instalación estable nunca queda rota para seguir investigando.
+
+No se aceptará ningún cambio sin verificar launcher oficial, pareja cliente/servidor, conexión local, IA normal, 4 GB, UI 4K, pila, selector de edición, descarga de mazos, datos de usuario y una partida real completa.
+
+Los decks, imágenes, preferencias y logs se separan de binarios y código. No se mezclan instalaciones oficiales, beta, experimentales o comunitarias.
+
+El checkpoint actual solo podrá congelarse como **RC1.1** cuando la pestaña de IA esté restaurada y todo el comportamiento base esté validado. Si la fuente exacta, la pareja cliente/servidor o el rollback no están claros, se detiene el trabajo: no se adivina ni se parchea a ciegas.
