@@ -130,3 +130,18 @@ Lo inadmisible es que un fallo dañe, sobrescriba, contamine, rebaje o vuelva ir
 Cada experimento debe tener clon aislado, backup, hash, manifest, prueba real y rollback. Si falla, se marca como **FAILED**, se conservan sus logs y se abandona o aísla ese clon. La instalación estable nunca se repara aplicando parches de emergencia encima de un experimento fallido.
 
 **Un mod fallido puede perder su propio sandbox. Nunca puede perder el proyecto, la instalación estable, el último checkpoint ni el trabajo acumulado.**
+
+
+## 9. RC1 and RC1.1 are protected shields
+
+**RC1** is the protected original stable baseline. It is never modified by experiments.
+
+**RC1.1** is the protected corrected clone of RC1. It may include only explicitly validated repairs that preserve the RC1 baseline. Once accepted, it is also immutable.
+
+RC1 and RC1.1 are both recovery points and shields. They are not development sandboxes, staging folders, or disposable branches. Every future mod starts from a separate new clone derived from one of these protected checkpoints.
+
+No future experiment may write directly into RC1 or RC1.1. If an experiment succeeds, it is promoted into a new separately named checkpoint only after full validation. If it fails, RC1 and RC1.1 remain untouched.
+
+### Regla definitiva
+
+**RC1 y RC1.1 son blindajes protegidos. Los experimentos viven fuera de ellos.**
