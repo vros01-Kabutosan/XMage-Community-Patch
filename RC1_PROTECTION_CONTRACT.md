@@ -163,3 +163,22 @@ The protected branches will be created only from real checkpoint commits contain
 ### Regla de ramas
 
 **RC1 y RC1.1 tendrán ramas protegidas separadas cuando sus clones reales estén incorporados.**
+
+
+## 11. RC1.1 creation gate: AI is mandatory
+
+The current working clone must not be labelled, tagged, branched, or promoted as RC1.1 until the normal AI option has been restored.
+
+RC1.1 acceptance requires visible and playable proof that:
+
+- the normal AI entry is present in the table player-type selector;
+- a human player can create a table against the normal AI;
+- the AI starts and completes a real game;
+- the repaired AI does not regress the RC1 baseline;
+- the client and server are the exact pair from the protected clone.
+
+Until every item passes, the working clone remains an experiment and RC1.1 does not exist.
+
+### Puerta de entrada RC1.1
+
+**Sin IA normal restaurada y probada en una partida real, no existe RC1.1 ni puede crearse su blindaje.**
