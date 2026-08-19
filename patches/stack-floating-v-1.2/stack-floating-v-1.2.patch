@@ -1,0 +1,13 @@
+diff --git a/source/rc1.1-complete-community/Mage.Client/src/main/java/mage/client/game/GamePanel.java b/source/rc1.1-complete-community/Mage.Client/src/main/java/mage/client/game/GamePanel.java
+index 8c6d3e05..cb1ee5da 100644
+--- a/source/rc1.1-complete-community/Mage.Client/src/main/java/mage/client/game/GamePanel.java
++++ b/source/rc1.1-complete-community/Mage.Client/src/main/java/mage/client/game/GamePanel.java
+@@ -1642,6 +1642,8 @@ public final class GamePanel extends javax.swing.JPanel {
+         header.addMouseMotionListener(dragAdapter);
+         floatingStackTitleLabel.addMouseListener(dragAdapter);
+         floatingStackTitleLabel.addMouseMotionListener(dragAdapter);
++        dragHint.addMouseListener(dragAdapter);
++        dragHint.addMouseMotionListener(dragAdapter);
+ 
+         return header;
+     }
