@@ -1,0 +1,2 @@
+SHA256  FILE
+0c0585689d97b89bbefcbbcc24b26e2268c25f312170fddca7d754c5dab33a5f  stack-floating-v-1.2.patch
