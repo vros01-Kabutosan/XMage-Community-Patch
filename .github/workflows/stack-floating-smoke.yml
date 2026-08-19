@@ -1,0 +1,51 @@
+name: Stack floating smoke
+
+on:
+  push:
+    branches:
+      - work/stack-floating-v-1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stack-floating-v-1
+  cancel-in-progress: true
+
+jobs:
+  compile-and-static-smoke:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: source/rc1.1-complete-community
+    steps:
+      - name: Checkout work branch
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+          cache-dependency-path: source/rc1.1-complete-community/pom.xml
+
+      - name: Compile client and dependencies
+        run: mvn -B -pl Mage.Client -am -DskipTests package
+
+      - name: Run client-module tests
+        run: mvn -B -pl Mage.Client -am test
+
+      - name: Verify stack presentation contract
+        shell: bash
+        run: |
+          file="Mage.Client/src/main/java/mage/client/game/GamePanel.java"
+          grep -F 'Stack: 0 - top resolves first' "$file"
+          grep -F 'Stack: " + objectCount + " - top resolves first' "$file"
+          grep -F 'new JLabel("\u2501", SwingConstants.CENTER)' "$file"
+          grep -F 'loadCards(game.getStack(), bigCard, gameId, false)' "$file"
+          if grep -F 'Ã' "$file"; then
+            echo "Mojibake detected in GamePanel.java"
+            exit 1
+          fi
