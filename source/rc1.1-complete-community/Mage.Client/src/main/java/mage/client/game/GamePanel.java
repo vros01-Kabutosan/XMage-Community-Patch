@@ -1642,6 +1642,8 @@ public final class GamePanel extends javax.swing.JPanel {
         header.addMouseMotionListener(dragAdapter);
         floatingStackTitleLabel.addMouseListener(dragAdapter);
         floatingStackTitleLabel.addMouseMotionListener(dragAdapter);
+        dragHint.addMouseListener(dragAdapter);
+        dragHint.addMouseMotionListener(dragAdapter);
 
         return header;
     }
