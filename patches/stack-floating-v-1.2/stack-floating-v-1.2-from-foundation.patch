@@ -1,0 +1,48 @@
+diff --git a/source/rc1.1-complete-community/Mage.Client/src/main/java/mage/client/game/GamePanel.java b/source/rc1.1-complete-community/Mage.Client/src/main/java/mage/client/game/GamePanel.java
+index 0440957c..cb1ee5da 100644
+--- a/source/rc1.1-complete-community/Mage.Client/src/main/java/mage/client/game/GamePanel.java
++++ b/source/rc1.1-complete-community/Mage.Client/src/main/java/mage/client/game/GamePanel.java
+@@ -1588,14 +1588,14 @@ public final class GamePanel extends javax.swing.JPanel {
+         header.setBackground(new Color(28, 29, 36));
+         header.setBorder(new EmptyBorder(7, 10, 7, 10));
+ 
+-        floatingStackTitleLabel = new JLabel("Spells in stack: 0");
++        floatingStackTitleLabel = new JLabel("Stack: 0 - top resolves first");
+         floatingStackTitleLabel.setFont(
+                 GUISizeHelper.dialogFont.deriveFont(Font.BOLD)
+         );
+         floatingStackTitleLabel.setForeground(new Color(235, 235, 240));
+         header.add(floatingStackTitleLabel, BorderLayout.WEST);
+ 
+-        JLabel dragHint = new JLabel("");
++        JLabel dragHint = new JLabel("Drag to move");
+         dragHint.setFont(GUISizeHelper.dialogFont.deriveFont(Font.PLAIN, Math.max(9f, GUISizeHelper.dialogFont.getSize2D() - 2f)));
+         dragHint.setForeground(new Color(150, 152, 162));
+         header.add(dragHint, BorderLayout.EAST);
+@@ -1642,6 +1642,8 @@ public final class GamePanel extends javax.swing.JPanel {
+         header.addMouseMotionListener(dragAdapter);
+         floatingStackTitleLabel.addMouseListener(dragAdapter);
+         floatingStackTitleLabel.addMouseMotionListener(dragAdapter);
++        dragHint.addMouseListener(dragAdapter);
++        dragHint.addMouseMotionListener(dragAdapter);
+ 
+         return header;
+     }
+@@ -1694,7 +1696,7 @@ public final class GamePanel extends javax.swing.JPanel {
+         bottomResizeGrip.setCursor(Cursor.getPredefinedCursor(Cursor.S_RESIZE_CURSOR));
+         bottomResizeGrip.setToolTipText("Drag to resize stack height");
+ 
+-        JLabel resizeMark = new JLabel("ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â", SwingConstants.CENTER);
++        JLabel resizeMark = new JLabel("\u2501", SwingConstants.CENTER);
+         resizeMark.setForeground(new Color(90, 92, 103));
+         resizeMark.setFont(GUISizeHelper.dialogFont.deriveFont(Font.PLAIN, 9f));
+         bottomResizeGrip.add(resizeMark, BorderLayout.CENTER);
+@@ -1816,7 +1818,7 @@ public final class GamePanel extends javax.swing.JPanel {
+         if (floatingStackFrame != null) {
+             if (floatingStackTitleLabel != null) {
+                 // XCP_STACK_HEADER_R5_1C
+-                floatingStackTitleLabel.setText("Spells in stack: " + objectCount);
++                floatingStackTitleLabel.setText("Stack: " + objectCount + " - top resolves first");
+             }
+ 
+             if (hasObjects && !floatingStackHadObjects) {
