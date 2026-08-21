@@ -1,0 +1,9 @@
+RC1.3-BLINDADA-COMPLETE — DEUDA COSMETICA NO BLOQUEANTE
+
+Aceptado y congelado:
+
+1. El texto verde de la guia puede quedar ligeramente recortado en algunas dimensiones.
+2. El boton Done puede quedar parcialmente oculto por la franja de fase.
+
+No afecta a la pila, la seleccion, la interaccion, el orden LIFO ni la resolucion.
+No abrir otro parche para estos dos puntos dentro de RC1.3.
