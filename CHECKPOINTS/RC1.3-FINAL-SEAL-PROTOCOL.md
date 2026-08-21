@@ -1,6 +1,14 @@
 # Protocolo de sellado final RC1.3
 
-El paquete contiene `final-close/CIERRE-FINAL-RC1.3.cmd`.
+El paquete contiene `final-close/01-REPARAR-RECURSOS-UI-v-1.2.12.3.cmd` y `final-close/CIERRE-FINAL-RC1.3.cmd`.
+
+Orden obligatorio cuando el cierre informe `Falta background/background.png`:
+
+1. Ejecutar `final-close/01-REPARAR-RECURSOS-UI-v-1.2.12.3.cmd`.
+2. Comprobar que el log termina con `REPARACION COMPLETADA`.
+3. Ejecutar `final-close/CIERRE-FINAL-RC1.3.cmd`.
+
+No ejecutar el cierre antes de reparar ese recurso. La reparación crea su propio backup y log.
 
 Ejecutarlo desde Windows después de extraer el paquete. El script no usa `/MIR`, no modifica las bases blindadas y solo crea el acta dentro de:
 
