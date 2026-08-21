@@ -9,6 +9,7 @@ Orden obligatorio cuando el cierre informe `Falta background/background.png`:
 3. Ejecutar `final-close/CIERRE-FINAL-RC1.3.cmd`.
 
 No ejecutar el cierre antes de reparar ese recurso. La reparación crea su propio backup y log.
+El reparador cierra primero los procesos Java de XMage que bloquean el JAR. Si el bloqueo persiste, aplica el protocolo de cierre de procesos Java restantes, lo registra en el log y verifica acceso exclusivo antes de modificar el archivo.
 
 Ejecutarlo desde Windows después de extraer el paquete. El script no usa `/MIR`, no modifica las bases blindadas y solo crea el acta dentro de:
 
