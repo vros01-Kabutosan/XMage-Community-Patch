@@ -166,3 +166,94 @@ Todo nuevo mod debe incluir o reutilizar estos componentes:
 - contrato, manifiesto SHA256, logs y documentación.
 
 El `.cmd` es únicamente el orquestador. Las comprobaciones de seguridad deben vivir en PowerShell y devolver códigos de salida inequívocos. Ningún error puede ocultarse con `> nul`, `|| exit /b 0` o mensajes que aparenten éxito.
+
+## Contrato maestro universal para todas las IA y todos los mods
+
+Este contrato es obligatorio para cualquier IA o persona con capacidad de programación que intervenga en XMage: GPT, Claude, DeepSeek, Qwen o cualquier otra. La identidad de la IA no concede ninguna excepción. La IA que no pueda trabajar con rutas reales, código verificable, compilación real, hashes, logs y pruebas reproducibles no es válida para este proyecto.
+
+La IA debe trabajar como un clon operativo reproducible del procedimiento establecido en este contrato. No puede improvisar otro método, crear una base paralela, pedir de nuevo material ya incluido en el paquete o declarar éxito por inferencia.
+
+Cada mod debe ser una línea completamente independiente. Puede haber cientos o miles de mods, estables o fallidos, pero ninguno puede mezclarse con otro ni alterar la trazabilidad de los demás.
+
+La carpeta maestra de organización será:
+
+`J:\\mtg\\_ARCHIVO\\MODS`
+
+Cada mod debe tener, como mínimo, esta estructura:
+
+```text
+MOD-NNN-NOMBRE-v-X.Y\\
+├── TEST\\
+├── LOGS\\
+├── BACKUPS\\
+├── MANIFEST\\
+├── RUN-MOD-NNN-MAESTRO.cmd
+├── ESTADO.txt
+└── README.md
+```
+
+El catálogo global debe registrar como mínimo:
+
+`J:\\mtg\\_ARCHIVO\\MODS\\CATALOGO-MODS.csv`
+
+Cada registro debe incluir identificador, nombre, versión, fecha, IA o autor, base SHA, estado, JAR SHA, ubicación, resultado de smoke, problemas conocidos y rollback.
+
+## Estados obligatorios
+
+Cada mod debe tener exactamente uno de estos estados:
+
+- `DESIGN`: diseñado, todavía no compilado;
+- `TEST`: en clon aislado y bajo pruebas;
+- `FAILED`: fallido y no implementado;
+- `CANDIDATE`: todos los gates superados, pendiente de autorización;
+- `STABLE`: activado mediante procedimiento controlado;
+- `RETIRED`: retirado, conservado para trazabilidad y rollback.
+
+Un mod `FAILED` nunca puede presentarse como parcialmente válido ni activarse automáticamente. Un mod `CANDIDATE` nunca puede considerarse `STABLE` sin activación controlada y verificación posterior.
+
+## Entrega mínima obligatoria de cada IA
+
+La IA debe entregar un paquete reproducible, nunca únicamente una explicación o un fragmento de código:
+
+- `.cmd` maestro;
+- scripts PowerShell auxiliares;
+- código o parche del mod;
+- README operativo;
+- logs completos;
+- manifiesto SHA256;
+- resultado Maven;
+- JAR generado;
+- smoke test;
+- backup;
+- rollback;
+- estado final del mod;
+- registro para `CATALOGO-MODS.csv`.
+
+El `.cmd` maestro debe poder auditar, crear el clon, aplicar el mod, compilar, calcular hashes, ejecutar el smoke, crear el paquete y generar el informe sin intervención manual intermedia, excepto la autorización explícita de activación estable.
+
+## Prohibiciones absolutas
+
+La IA no puede:
+
+- usar `main` como base de trabajo;
+- modificar directamente `J:\\mtg\\xmage`;
+- modificar cualquier instalación RC1, RC1.1, RC1.3 o copia estable blindada;
+- trabajar fuera de `J:\\mtg\\_ARCHIVO\\RC1.1-WORK-PILE-1.1` para el clon de desarrollo;
+- activar automáticamente un mod;
+- borrar un mod fallido;
+- sobrescribir un backup;
+- usar `/MIR`;
+- ocultar errores o convertir un código de error en éxito;
+- generar logs incompletos o tardíos;
+- copiar imágenes oficiales dentro del clon;
+- cambiar servidor en un mod exclusivamente de cliente;
+- mezclar versiones, ramas, paquetes o bases;
+- inventar resultados de compilación, smoke, SHA o compatibilidad;
+- pedir material que ya esté en el paquete o contrato;
+- continuar después de un gate fallido.
+
+## Regla final de validez
+
+Un mod solo existe como mod válido cuando su paquete, logs, manifiesto, hashes, compilación, smoke, estado y rollback están presentes y son coherentes entre sí. Si falta un solo elemento, el resultado es `FAILED` o queda detenido en el estado anterior; nunca se interpreta como aprobado.
+
+La RC1.3 blindada es siempre la base de retorno. Ningún experimento, IA, herramienta, script, mod estable o mod fallido puede alterar esa base ni eliminar la evidencia de su existencia.
