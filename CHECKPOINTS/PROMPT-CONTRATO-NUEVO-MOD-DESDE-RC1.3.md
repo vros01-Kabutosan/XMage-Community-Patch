@@ -13,7 +13,7 @@ Usa como referencia:
 - fundación: `source-foundation-v-1.7-complete-target`;
 - SHA de fundación: `b974aa865b3a8b1a24df52a2321eacc54f06dfac`;
 - checkpoint RC1.3: `CHECKPOINTS/CIERRE-DEFINITIVO-RC1.3-20260822-015725.md`;
-- paquete de continuidad: `XMAGE-RC1.3-BLINDADA-COMPLETE-v-10.zip`.
+- paquete de continuidad: `XMAGE-RC1.3-BLINDADA-COMPLETE-v-9.zip`.
 
 ## Regla de aislamiento
 
@@ -93,3 +93,76 @@ Entrega siempre:
 ## Regla de publicación
 
 No actives el mod sobre la instalación estable hasta superar todos los gates y obtener autorización explícita para una activación controlada. La RC1.3 sellada permanece intacta como punto de retorno.
+
+## Automatización obligatoria
+
+La operación debe entregarse con un lanzador maestro, preferiblemente:
+
+`00-INICIAR-NUEVO-MOD-RC1.3.cmd`
+
+El lanzador debe ejecutar, con log desde el primer segundo:
+
+1. auditoría de Git, Java, Maven y rutas;
+2. verificación de rama, tag, SHA y manifiesto;
+3. creación del clon aislado;
+4. aplicación del mod solo en el clon;
+5. compilación y comprobación de `BUILD SUCCESS`;
+6. cálculo de SHA256;
+7. arranque del servidor y cliente de prueba;
+8. carga de la configuración personal mediante enlace de lectura a las imágenes;
+9. smoke funcional y visual;
+10. generación de logs, manifiesto, paquete reproducible y resultado de gates.
+
+La activación estable debe estar separada en otro script, por ejemplo:
+
+`07-ACTIVAR-CON-BACKUP.ps1`
+
+Nunca debe activarse automáticamente al terminar una compilación.
+
+## Capa adicional de protección: modelo de cero confianza
+
+Antes de modificar nada, el automatizador debe abortar si se cumple cualquiera de estas condiciones:
+
+- el clon está dentro de una ruta protegida;
+- la ruta de trabajo no está dentro de `J:\\mtg\\_ARCHIVO\\RC1.1-WORK-PILE-1.1`;
+- falta el SHA autorizado o no coincide;
+- el manifiesto, los scripts o el JAR no coinciden con sus hashes esperados;
+- existe un proceso XMage que pueda bloquear el JAR durante una operación sensible;
+- no existe un backup verificable;
+- no se puede escribir el log;
+- se detecta `/MIR`, `git reset --hard`, borrado recursivo o una ruta destructiva no autorizada.
+
+El sistema debe cumplir además estas reglas:
+
+- empezar siempre en modo `AUDIT/DRY-RUN`;
+- usar una lista blanca de rutas y una lista negra explícita de instalaciones blindadas;
+- crear un identificador único de ejecución y registrar cada comando, ruta, PID, puerto y hash;
+- conservar los logs aunque el cliente no llegue a abrirse;
+- verificar el backup antes de cualquier sustitución;
+- requerir dos confirmaciones independientes para la activación estable;
+- crear un paquete de rollback antes de activar;
+- comprobar después de activar el SHA del JAR activo;
+- si falla cualquier gate, detenerse y no continuar silenciosamente.
+
+La activación solo podrá continuar si el operador introduce explícitamente:
+
+`CONFIRMAR-ACTIVACION-RC1.3-MOD`
+
+La palabra anterior no debe estar pregrabada en el script ni aceptarse desde un parámetro automático.
+
+## Kit operativo mínimo
+
+Todo nuevo mod debe incluir o reutilizar estos componentes:
+
+- `00-INICIAR-NUEVO-MOD-RC1.3.cmd`;
+- `01-AUDITAR-BASE.ps1`;
+- `02-CREAR-CLON-AISLADO.ps1`;
+- `03-APLICAR-MOD.ps1`;
+- `04-COMPILAR-Y-HASH.ps1`;
+- `05-SMOKE-VISUAL.ps1`;
+- `06-GENERAR-PAQUETE.ps1`;
+- `07-ACTIVAR-CON-BACKUP.ps1`;
+- `08-ROLLBACK.ps1`;
+- contrato, manifiesto SHA256, logs y documentación.
+
+El `.cmd` es únicamente el orquestador. Las comprobaciones de seguridad deben vivir en PowerShell y devolver códigos de salida inequívocos. Ningún error puede ocultarse con `> nul`, `|| exit /b 0` o mensajes que aparenten éxito.
