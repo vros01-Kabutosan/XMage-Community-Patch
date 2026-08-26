@@ -27,6 +27,14 @@ function Test-IsUnder([string]$Child, [string]$Parent) {
         $Child.StartsWith($Parent + '\', [System.StringComparison]::OrdinalIgnoreCase)
 }
 
+function Get-ManifestField([object]$Row, [string[]]$Names) {
+    foreach ($name in $Names) {
+        $property = $Row.PSObject.Properties | Where-Object { $_.Name.Trim().Trim([char]0xFEFF).Equals($name, [System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1
+        if ($null -ne $property) { return [string]$property.Value }
+    }
+    return $null
+}
+
 $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 $runName = "VERIFY-RECOVERY-CLONE-v-1.0.0-$stamp"
 $runDir = Join-Path $LogRoot $runName
@@ -88,19 +96,50 @@ try {
     }
     if ($cardArtFiles.Count -ne 0) { throw "Hay imágenes/arte de cartas: $($cardArtFiles.Count)" }
 
-    $rows = @(Import-Csv -LiteralPath $manifestPath -Delimiter ([char]9))
-    if ($rows.Count -eq 0) { throw 'El manifiesto está vacío' }
-    if (-not ($rows[0].PSObject.Properties.Name -contains 'RelativePath') -or
-        -not ($rows[0].PSObject.Properties.Name -contains 'Length') -or
-        -not ($rows[0].PSObject.Properties.Name -contains 'SHA256')) {
-        throw 'Formato de manifiesto inválido'
+    $header = Get-Content -LiteralPath $manifestPath -TotalCount 1 -ErrorAction Stop
+    if ($header -match "`t") {
+        $manifestDelimiter = [char]9
+    } elseif ($header -match ';') {
+        $manifestDelimiter = ';'
+    } elseif ($header -match ',') {
+        $manifestDelimiter = ','
+    } else {
+        throw "No se reconoce el separador del manifiesto. Cabecera: $header"
     }
+    $rows = @(Import-Csv -LiteralPath $manifestPath -Delimiter $manifestDelimiter)
+    if ($rows.Count -eq 0) { throw 'El manifiesto está vacío' }
+    $manifestColumns = @($rows[0].PSObject.Properties.Name | ForEach-Object { $_.Trim().Trim([char]0xFEFF) })
+    Write-Host "MANIFEST COLUMNS: $($manifestColumns -join ', ')"
+
+    $pathColumnNames = @('RelativePath','Path','FilePath','FullName')
+    $lengthColumnNames = @('Length','Bytes','Size')
+    $hashColumnNames = @('SHA256','SHA-256','Hash')
+    $manifestPathColumn = $manifestColumns | Where-Object { $pathColumnNames -contains $_ } | Select-Object -First 1
+    $manifestHashColumn = $manifestColumns | Where-Object { $hashColumnNames -contains $_ } | Select-Object -First 1
+    if (-not $manifestPathColumn -or -not $manifestHashColumn) {
+        throw "Formato de manifiesto inválido. Columnas detectadas: $($manifestColumns -join ', ')"
+    }
+    $manifestLengthColumn = $manifestColumns | Where-Object { $lengthColumnNames -contains $_ } | Select-Object -First 1
+    $lengthChecksAvailable = [bool]$manifestLengthColumn
+    Write-Host "MANIFEST PATH COLUMN: $manifestPathColumn"
+    Write-Host "MANIFEST HASH COLUMN: $manifestHashColumn"
+    Write-Host "MANIFEST LENGTH COLUMN: $(if ($lengthChecksAvailable) { $manifestLengthColumn } else { 'NOT_PRESENT' })"
 
     $seen = @{}
     $verified = 0
+    $lengthVerified = 0
     foreach ($row in $rows) {
-        $relative = [string]$row.RelativePath
-        if ([string]::IsNullOrWhiteSpace($relative) -or [System.IO.Path]::IsPathRooted($relative) -or $relative -match '(^|[\\/])\.\.([\\/]|$)') {
+        $relative = Get-ManifestField -Row $row -Names $pathColumnNames
+        if ($null -eq $relative) { throw "Fila sin ruta en manifiesto" }
+        $relative = $relative.Trim().Trim('"').Replace('/', '\')
+        if ([System.IO.Path]::IsPathRooted($relative)) {
+            if ($relative.StartsWith($recoveryFull + '\', [System.StringComparison]::OrdinalIgnoreCase)) {
+                $relative = $relative.Substring($recoveryFull.Length).TrimStart('\')
+            } else {
+                throw "Ruta absoluta ajena a recovery en manifiesto: $relative"
+            }
+        }
+        if ([string]::IsNullOrWhiteSpace($relative) -or $relative -match '(^|[\\/])\.\.([\\/]|$)') {
             throw "Ruta insegura en manifiesto: $relative"
         }
         $key = $relative.Replace('\','/').ToLowerInvariant()
@@ -109,9 +148,18 @@ try {
         $filePath = Join-Path $recoveryFull ($relative.Replace('/', '\'))
         if (-not (Test-Path -LiteralPath $filePath -PathType Leaf)) { throw "Falta archivo del manifiesto: $relative" }
         $file = Get-Item -LiteralPath $filePath -Force
-        if ([int64]$row.Length -ne $file.Length) { throw "Tamaño distinto: $relative" }
+        if ($lengthChecksAvailable) {
+            $lengthValue = Get-ManifestField -Row $row -Names $lengthColumnNames
+            if ($null -eq $lengthValue -or $lengthValue -notmatch '^\d+$') { throw "Longitud inválida: $relative" }
+            $expectedLength = [int64]$lengthValue
+            if ($expectedLength -ne $file.Length) { throw "Tamaño distinto: $relative" }
+            $lengthVerified++
+        }
         $actual = (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToUpperInvariant()
-        if ($actual -ne ([string]$row.SHA256).ToUpperInvariant()) { throw "SHA256 distinto: $relative" }
+        $hashValue = Get-ManifestField -Row $row -Names $hashColumnNames
+        if ($null -eq $hashValue) { throw "Fila sin SHA256: $relative" }
+        $expectedHash = $hashValue.Trim().Trim('"').ToUpperInvariant()
+        if ($actual -ne $expectedHash) { throw "SHA256 distinto: $relative" }
         $verified++
     }
 
@@ -130,6 +178,8 @@ try {
         RecoveryRoot = $recoveryFull
         ManifestRows = $rows.Count
         VerifiedFiles = $verified
+        LengthVerified = $lengthVerified
+        ManifestColumns = ($manifestColumns -join ',')
         TotalFilesNow = $allFiles.Count
         ClientJarSHA256 = $clientHash
         DeckFiles = $deckFiles
