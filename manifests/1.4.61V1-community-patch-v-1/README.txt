@@ -1,11 +1,13 @@
-﻿COMPLETE SOURCE SNAPSHOT v1.0.1
-Status: prepared for review
-Base family: RC1.1 / XMage 1.4.61
-Stable Superior Spider-Man source: verified locally
+COMPLETE STABLE SOURCE SNAPSHOT v1.0.2
+Status: validated source snapshot
+Base family: RC1.1 / XMage 1.4.61V1
+Latest accepted source integration: Superior Spider-Man corrected
+Maven build: passed in isolated stage
 Generated Maven target directories: excluded
 .git directories: excluded
+Runtime logs and user profiles: excluded
 Card-art/image payload: excluded
-Active installation: never modified
+Active installation: never modified by the source publication workflow
 Protected bases: never modified
 Copy mode: isolated destination, no /MIR
-This tool does not commit or push.
+This repository snapshot contains source and reproducibility metadata; local recovery packages remain separate.
