@@ -163,6 +163,8 @@ try {
         if ([System.IO.Path]::IsPathRooted($relative)) {
             if ($relative.StartsWith($recoveryFull + '\', [System.StringComparison]::OrdinalIgnoreCase)) {
                 $relative = $relative.Substring($recoveryFull.Length).TrimStart('\')
+            } elseif ($relative.StartsWith($installFull + '\', [System.StringComparison]::OrdinalIgnoreCase)) {
+                $relative = $relative.Substring($installFull.Length).TrimStart('\')
             } else {
                 throw "Ruta absoluta ajena a recovery en manifiesto: $relative"
             }
