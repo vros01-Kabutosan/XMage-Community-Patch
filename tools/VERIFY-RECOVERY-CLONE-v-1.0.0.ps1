@@ -121,7 +121,7 @@ try {
     }
     if ($headerIndex -lt 0) { throw 'No se encuentra una cabecera tabular en el manifiesto' }
     $header = $manifestLines[$headerIndex]
-    Write-Host "MANIFEST HEADER: $header"
+    Write-Host "MANIFEST FIRST RECORD OR HEADER: $header"
     if ($header -match "`t") {
         $manifestDelimiter = [char]9
     } elseif ($header -match ';') {
@@ -134,7 +134,26 @@ try {
         throw "No se reconoce el separador del manifiesto. Cabecera: $header"
     }
     $csvLines = $manifestLines[$headerIndex..($manifestLines.Count - 1)]
-    $rows = @($csvLines | ConvertFrom-Csv -Delimiter $manifestDelimiter)
+    $firstFields = @($header.Split([char]$manifestDelimiter))
+    $isHeaderlessFourColumnManifest = $firstFields.Count -ge 4 -and
+        $firstFields[1].Trim().Trim('"') -match '^\d+$' -and
+        $firstFields[3].Trim().Trim('"') -match '^[A-Fa-f0-9]{64}$'
+    if ($isHeaderlessFourColumnManifest) {
+        Write-Host 'MANIFEST FORMAT: headerless path/length/timestamp/SHA256'
+        $rows = foreach ($line in $csvLines) {
+            if ([string]::IsNullOrWhiteSpace($line)) { continue }
+            $fields = @($line.Split([char]$manifestDelimiter))
+            if ($fields.Count -lt 4) { throw "Registro incompleto en manifiesto: $line" }
+            [PSCustomObject][ordered]@{
+                RelativePath = $fields[0].Trim().Trim('"')
+                Length = $fields[1].Trim().Trim('"')
+                Timestamp = $fields[2].Trim().Trim('"')
+                SHA256 = $fields[3].Trim().Trim('"')
+            }
+        }
+    } else {
+        $rows = @($csvLines | ConvertFrom-Csv -Delimiter $manifestDelimiter)
+    }
     if ($rows.Count -eq 0) { throw 'El manifiesto está vacío' }
     $manifestColumns = @($rows[0].PSObject.Properties.Name | ForEach-Object { $_.Trim().Trim([char]0xFEFF) })
     Write-Host "MANIFEST COLUMNS: $($manifestColumns -join ', ')"
