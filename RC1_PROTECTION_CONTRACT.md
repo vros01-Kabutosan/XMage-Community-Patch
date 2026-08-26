@@ -3,6 +3,14 @@
 Status: **MANDATORY / NON-NEGOTIABLE**  
 Applies to: XMage Community Patch RC1 and every future patch, mod, migration, or experiment.
 
+
+Current protected checkpoint:
+- Name: **RC1.3**
+- Exact stable commit: `c96f1694854fb25d5d3e3c1928b573cbe9227ea3`
+- Canonical protected branch: `port/1.4.61V1-community-patch`
+- Historical **RC1.1** remains immutable and unchanged.
+
+
 ## 1. Stable installation is sacred
 
 The known-good RC1 installation is the source of truth. No future change may overwrite, mutate, or mix with it directly.
@@ -59,7 +67,7 @@ Decks, card images, logs, preferences, and other user data must be stored and mi
 
 ## 6. Immutable checkpoint rule
 
-The last validated RC1 checkpoint is immutable. Once accepted, it receives:
+The last validated stable checkpoint is immutable. Once accepted, it receives:
 
 - a unique version name;
 - a commit or tag;
@@ -69,7 +77,7 @@ The last validated RC1 checkpoint is immutable. Once accepted, it receives:
 - a rollback procedure;
 - a test report.
 
-For the current migration, the first protected checkpoint is **RC1.1**. It may only be created after the AI option and all required baseline behavior are restored and validated.
+For the current migration, the protected complete-source checkpoint is **RC1.3** at commit `c96f1694854fb25d5d3e3c1928b573cbe9227ea3`. It may only be sealed after the AI option and all required baseline behavior are restored and validated.
 
 ## 7. Stop condition
 
@@ -91,7 +99,7 @@ No se aceptará ningún cambio sin verificar launcher oficial, pareja cliente/se
 
 Los decks, imágenes, preferencias y logs se separan de binarios y código. No se mezclan instalaciones oficiales, beta, experimentales o comunitarias.
 
-El checkpoint actual solo podrá congelarse como **RC1.1** cuando la pestaña de IA esté restaurada y todo el comportamiento base esté validado. Si la fuente exacta, la pareja cliente/servidor o el rollback no están claros, se detiene el trabajo: no se adivina ni se parchea a ciegas.
+El checkpoint protegido actual solo podrá congelarse como **RC1.3** en el commit `c96f1694854fb25d5d3e3c1928b573cbe9227ea3` cuando la pestaña de IA esté restaurada y todo el comportamiento base esté validado. Si la fuente exacta, la pareja cliente/servidor o el rollback no están claros, se detiene el trabajo: no se adivina ni se parchea a ciegas.
 
 ## 8. Unlimited experiments, zero impact
 
@@ -122,24 +130,23 @@ The stable checkpoint is the protected reference. Experiments are disposable; th
 
 **RC1** is the protected original stable baseline. It is never modified by experiments.
 
-**RC1.1** is the protected corrected clone of RC1. It may include only explicitly validated repairs that preserve the RC1 baseline. Once accepted, it is also immutable.
+**RC1.1** is the historical protected corrected clone of RC1. It remains immutable and is never rewritten.
 
-RC1 and RC1.1 are both recovery points and shields. They are not development sandboxes, staging folders, or disposable branches. Every future mod starts from a separate new clone derived from one of these protected checkpoints.
+**RC1**, **RC1.1**, and **RC1.3** are protected recovery points and shields. They are not development sandboxes, staging folders, or disposable branches. Every future mod starts from a separate new clone derived from one of these protected checkpoints.
 
-No future experiment may write directly into RC1 or RC1.1. If an experiment succeeds, it is promoted into a new separately named checkpoint only after full validation. If it fails, RC1 and RC1.1 remain untouched.
+No future experiment may write directly into RC1, RC1.1, or RC1.3. If an experiment succeeds, it is promoted into a new separately named checkpoint only after full validation. If it fails, RC1 and RC1.1 remain untouched.
 
 ### Regla definitiva
 
-**RC1 y RC1.1 son blindajes protegidos. Los experimentos viven fuera de ellos.**
+**RC1, RC1.1 y RC1.3 son blindajes protegidos. Los experimentos viven fuera de ellos.**
 
 ## 10. Separate protected branches
 
-When the real checkpoint payloads are present, the repository will maintain separate protected branches:
+The canonical protected branch for the current RC1.3 checkpoint is `port/1.4.61V1-community-patch`. Its technical name is intentionally preserved because it is the repository's stable clone target and must not be renamed.
 
-- `protected/rc1`: immutable original RC1 baseline.
-- `protected/rc1.1`: immutable corrected and validated RC1.1 clone.
+The immutable version identity for the current checkpoint is the `RC1.3` tag, pointing exactly to commit `c96f1694854fb25d5d3e3c1928b573cbe9227ea3`. Historical RC1 and RC1.1 checkpoints remain separate immutable history and are never rewritten.
 
-They must not be merged into one another and must not be used as development branches. `main` may contain documentation and project coordination, but it is not a substitute for either protected checkpoint.
+The canonical stable branch and immutable tags must not be used as development branches. Future experiments use new branches derived from RC1.3 and are promoted only through the full validation contract.
 
 Future experiments use new branches derived from the appropriate protected checkpoint, for example `experiment/<description>`. Promotion to a new protected checkpoint requires the full validation contract.
 
@@ -147,13 +154,13 @@ The protected branches will be created only from real checkpoint commits contain
 
 ### Regla de ramas
 
-**RC1 y RC1.1 tendrán ramas protegidas separadas cuando sus clones reales estén incorporados.**
+La rama protegida canónica del checkpoint RC1.3 es `port/1.4.61V1-community-patch` y conserva deliberadamente su nombre técnico. La identidad de versión inmutable es la etiqueta `RC1.3`, apuntando exactamente a `c96f1694854fb25d5d3e3c1928b573cbe9227ea3`. RC1 y RC1.1 siguen siendo historia inmutable separada.
 
-## 11. RC1.1 creation gate: AI is mandatory
+## 11. Current checkpoint acceptance gate: AI is mandatory
 
-The current working clone must not be labelled, tagged, branched, or promoted as RC1.1 until the normal AI option has been restored.
+The current working clone must not be labelled, tagged, branched, or promoted as RC1.3 until the normal AI option has been restored.
 
-RC1.1 acceptance requires visible and playable proof that:
+RC1.3 acceptance requires visible and playable proof that:
 
 - the normal AI entry is present in the table player-type selector;
 - a human player can create a table against the normal AI;
@@ -161,11 +168,11 @@ RC1.1 acceptance requires visible and playable proof that:
 - the repaired AI does not regress the RC1 baseline;
 - the client and server are the exact pair from the protected clone.
 
-Until every item passes, the working clone remains an experiment and RC1.1 does not exist.
+Until every item passes, the working clone remains an experiment and RC1.3 does not exist.
 
-### Puerta de entrada RC1.1
+### Puerta de entrada RC1.3
 
-**Sin IA normal restaurada y probada en una partida real, no existe RC1.1 ni puede crearse su blindaje.**
+**Sin IA normal restaurada y probada en una partida real, no existe RC1.3 ni puede crearse su blindaje.**
 
 ## 12. Centralized logging is mandatory
 
@@ -197,7 +204,7 @@ Every patch, checkpoint, experiment, and portable package must receive a unique 
 
 - Small corrective patch: incremental numbering such as `1.1`, `1.2`, `1.3`.
 - Large architectural change or major checkpoint: major numbering such as `v-1`, `v-2`, `v-3`.
-- RC milestones remain explicit: `RC1`, `RC1.1`, and later milestones only when promoted by the contract.
+- RC milestones remain explicit: `RC1`, `RC1.1`, `RC1.2`, `RC1.3`, and later milestones only when promoted by the contract.
 - Never reuse a version name for different contents.
 - Never create ambiguous duplicates such as `(1)`, `(2)`, `final-final`, or unnamed replacements.
 - The version name must appear in the folder, branch, package, manifest, log, and test report.
@@ -210,7 +217,7 @@ Cada parche, checkpoint, experimento y paquete portable tendrá un nombre único
 
 - Parche pequeño: numeración incremental (`1.1`, `1.2`, `1.3`).
 - Cambio grande o checkpoint arquitectónico: versión mayor (`v-1`, `v-2`, `v-3`).
-- Hitos RC explícitos: `RC1`, `RC1.1`.
+- Hitos RC explícitos: `RC1`, `RC1.1`, `RC1.2`, `RC1.3`.
 - Nunca se reutilizan nombres ni se crean duplicados ambiguos como `(1)`, `(2)` o `final-final`.
 - El nombre debe coincidir en carpeta, rama, paquete, manifest, log y prueba.
 
