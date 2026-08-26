@@ -145,15 +145,43 @@ try {
     $activeJarHash = (Get-FileHash -LiteralPath $activeJar -Algorithm SHA256).Hash
     Write-Host "ACTIVE CLIENT JAR SHA256: $activeJarHash"
 
-    $excludedDirs = @(
-        'target',
-        '.git',
+    # Exclude only generated Maven targets. A source package named
+    # mage\target is legitimate Java source and must never be excluded.
+    $excludedDirs = New-Object System.Collections.Generic.List[string]
+
+    Get-ChildItem -LiteralPath $candidateFull -Directory -Recurse -Force -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.Name -eq 'target' -and
+            (Test-Path -LiteralPath (Join-Path $_.Parent.FullName 'pom.xml') -PathType Leaf)
+        } |
+        ForEach-Object {
+            if (-not $excludedDirs.Contains($_.FullName)) {
+                [void]$excludedDirs.Add($_.FullName)
+            }
+        }
+
+    Get-ChildItem -LiteralPath $candidateFull -Directory -Recurse -Force -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -eq '.git' } |
+        ForEach-Object {
+            if (-not $excludedDirs.Contains($_.FullName)) {
+                [void]$excludedDirs.Add($_.FullName)
+            }
+        }
+
+    foreach ($relativeImageDir in @(
         'plugins\images',
         'card-images',
         'card_images',
         'card-art',
         'card_art'
-    )
+    )) {
+        $imageDir = Join-Path $candidateFull $relativeImageDir
+        if (Test-Path -LiteralPath $imageDir -PathType Container) {
+            if (-not $excludedDirs.Contains($imageDir)) {
+                [void]$excludedDirs.Add($imageDir)
+            }
+        }
+    }
 
     Write-Host 'COPY: candidate source to isolated stage'
     $copyArgs = @(
@@ -165,9 +193,12 @@ try {
         '/XJ',
         '/R:1',
         '/W:1',
-        '/NP',
-        '/XD'
-    ) + $excludedDirs
+        '/NP'
+    )
+    if ($excludedDirs.Count -gt 0) {
+        $copyArgs += '/XD'
+        $copyArgs += @($excludedDirs)
+    }
 
     & robocopy @copyArgs 2>&1 | ForEach-Object { Write-Host $_ }
     $copyCode = $LASTEXITCODE
