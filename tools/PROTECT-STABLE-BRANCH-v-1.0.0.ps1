@@ -166,9 +166,7 @@ try {
         "repos/$Repository/rulesets",
         '--input', $payloadPath
     ) -ErrorReportPath $apiResponsePath
-    $createdBody = ($createdResponse -split '?
-?
-')[-1]
+    $createdBody = ($createdResponse -split '\r?\n\r?\n')[-1]
     $created = $createdBody | ConvertFrom-Json
 
     if ($created.name -ne 'LOCK-STABLE-RC1.1' -or $created.enforcement -ne 'active') {
