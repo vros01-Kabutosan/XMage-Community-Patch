@@ -108,33 +108,26 @@ try {
 
         Write-Host "Scanning: $root"
 
-        Get-ChildItem -LiteralPath $root -Recurse -File -Force -ErrorAction SilentlyContinue |
-            Where-Object {
-                $nameMatch = $false
-                foreach ($pattern in $sourceNames) {
-                    if ($_.Name -like $pattern) {
-                        $nameMatch = $true
-                        break
-                    }
-                }
-
-                $path = $_.FullName
-                $nameMatch -and
+        foreach ($sourcePattern in $sourceNames) {
+            Get-ChildItem -LiteralPath $root -Recurse -File -Force -Filter $sourcePattern -ErrorAction SilentlyContinue |
+                Where-Object {
+                    $path = $_.FullName
                     $path -notmatch '\\target\\' -and
-                    $path -notmatch '\\client\\lib\\' -and
-                    $path -notmatch '\\server\\lib\\' -and
-                    $path -notmatch '\\jre(17)?\\'
-            } |
-            ForEach-Object {
-                $sourceRows.Add([PSCustomObject]@{
-                    FileName = $_.Name
-                    FullName = $_.FullName
-                    RelativeToSearchRoot = Get-RelativeSafePath -Path $_.FullName -Roots @($root)
-                    Length = $_.Length
-                    LastWriteTime = $_.LastWriteTime.ToString('o')
-                    SHA256 = Get-SafeHash $_.FullName
-                })
-            }
+                        $path -notmatch '\\client\\lib\\' -and
+                        $path -notmatch '\\server\\lib\\' -and
+                        $path -notmatch '\\jre(17)?\\'
+                } |
+                ForEach-Object {
+                    $sourceRows.Add([PSCustomObject]@{
+                        FileName = $_.Name
+                        FullName = $_.FullName
+                        RelativeToSearchRoot = Get-RelativeSafePath -Path $_.FullName -Roots @($root)
+                        Length = $_.Length
+                        LastWriteTime = $_.LastWriteTime.ToString('o')
+                        SHA256 = Get-SafeHash $_.FullName
+                    })
+                }
+        }
 
         Get-ChildItem -LiteralPath $root -Recurse -File -Force -Filter 'mage-client-1.4.61.jar' -ErrorAction SilentlyContinue |
             Where-Object {
