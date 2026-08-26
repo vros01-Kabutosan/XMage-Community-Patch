@@ -155,16 +155,21 @@ try {
     Get-Content -LiteralPath $payloadPath -Raw | ConvertFrom-Json | Out-Null
     Write-Host 'LOCAL JSON VALID: yes'
 
-    $createdJson = Invoke-GhApi -Arguments @(
+    # Include response headers so an HTTP 422 keeps its complete API body in the log.
+    $createdResponse = Invoke-GhApi -Arguments @(
         'api',
         '--method', 'POST',
+        '--include',
         '-H', 'Accept: application/vnd.github+json',
         '-H', 'Content-Type: application/json',
         '-H', 'X-GitHub-Api-Version: 2026-03-10',
         "repos/$Repository/rulesets",
         '--input', $payloadPath
     ) -ErrorReportPath $apiResponsePath
-    $created = $createdJson | ConvertFrom-Json
+    $createdBody = ($createdResponse -split '?
+?
+')[-1]
+    $created = $createdBody | ConvertFrom-Json
 
     if ($created.name -ne 'LOCK-STABLE-RC1.1' -or $created.enforcement -ne 'active') {
         throw 'GitHub no confirmó el ruleset activo'
