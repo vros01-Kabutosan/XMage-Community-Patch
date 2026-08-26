@@ -12,6 +12,7 @@ $runDir = Join-Path $LogRoot $runName
 $runLog = Join-Path $runDir 'RUN.log'
 $resultReport = Join-Path $runDir 'RESULT.tsv'
 $payloadPath = Join-Path $runDir 'RULESET.json'
+$apiResponsePath = Join-Path $runDir 'GITHUB-API-RESPONSE.txt'
 $transcriptStarted = $false
 
 function Invoke-GhApi {
