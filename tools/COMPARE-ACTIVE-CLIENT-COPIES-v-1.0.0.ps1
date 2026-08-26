@@ -106,13 +106,30 @@ try {
     Write-Host "ACTIVE JAR: $activeJar"
     Write-Host "ACTIVE JAR SHA256: $activeJarHash"
 
+    # Windows PowerShell can pass a comma-separated array parameter as one string
+    # when this script is launched through powershell.exe -File. Normalize it
+    # before scanning so every requested root is actually visited.
+    $effectiveSearchRoots = New-Object System.Collections.Generic.List[string]
+    foreach ($rawRoot in $SearchRoots) {
+        foreach ($rootPart in ($rawRoot -split ',')) {
+            $root = $rootPart.Trim()
+            if ($root.Length -eq 0) { continue }
+            if (-not $effectiveSearchRoots.Contains($root)) {
+                [void]$effectiveSearchRoots.Add($root)
+            }
+        }
+    }
+
+    Write-Host "SearchRoots: $($effectiveSearchRoots -join '; ')"
+
     $candidatePaths = New-Object System.Collections.Generic.List[string]
-    foreach ($root in $SearchRoots) {
+    foreach ($root in $effectiveSearchRoots) {
         if (-not (Test-Path -LiteralPath $root -PathType Container)) {
             Write-Host "SEARCH ROOT MISSING: $root"
             continue
         }
 
+        Write-Host "SEARCH ROOT OK: $root"
         Get-ChildItem -LiteralPath $root -Recurse -File -Force -Filter 'mage-client-1.4.61.jar' -ErrorAction SilentlyContinue |
             ForEach-Object {
                 if (-not $candidatePaths.Contains($_.FullName)) {
