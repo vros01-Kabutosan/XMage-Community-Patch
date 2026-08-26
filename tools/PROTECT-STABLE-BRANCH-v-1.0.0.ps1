@@ -17,15 +17,31 @@ $transcriptStarted = $false
 function Invoke-GhApi {
     param(
         [Parameter(Mandatory = $true)]
-        [string[]]$Arguments
+        [string[]]$Arguments,
+        [string]$ErrorReportPath
     )
 
-    $output = & gh @Arguments 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        throw "GitHub CLI failed ($LASTEXITCODE): $($output -join [Environment]::NewLine)"
+    # Windows PowerShell 5.1 converts gh stderr into a terminating error when
+    # ErrorActionPreference is Stop, hiding GitHub's useful 422 response body.
+    $previousPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $output = @(& gh @Arguments 2>&1)
+        $exitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousPreference
     }
 
-    return ($output -join [Environment]::NewLine)
+    $text = $output -join [Environment]::NewLine
+    if ($ErrorReportPath) {
+        $text | Set-Content -LiteralPath $ErrorReportPath -Encoding UTF8
+    }
+    if ($exitCode -ne 0) {
+        throw "GitHub CLI failed ($exitCode): $text"
+    }
+
+    return $text
 }
 
 try {
@@ -35,7 +51,7 @@ try {
 
     $refName = "refs/heads/$Branch"
 
-    Write-Host 'PROTECT STABLE BRANCH v1.0.0'
+    Write-Host 'PROTECT STABLE BRANCH v1.0.0 (diagnostic patch)'
     Write-Host "Repository: $Repository"
     Write-Host "Stable branch: $Branch"
     Write-Host "Log: $runLog"
@@ -142,10 +158,12 @@ try {
         'api',
         '--method', 'POST',
         '-H', 'Accept: application/vnd.github+json',
-        '-H', 'X-GitHub-Api-Version: 2022-11-28',
+        '-H', 'Content-Type: application/json',
+        '-H', 'X-GitHub-Api-Version: 2026-03-10',
         "repos/$Repository/rulesets",
-        '--input', $payloadPath
-    )
+        '--input', $payloadPath,
+        '-q', '.'
+    ) -ErrorReportPath $apiResponsePath
     $created = $createdJson | ConvertFrom-Json
 
     if ($created.name -ne 'LOCK-STABLE-RC1.1' -or $created.enforcement -ne 'active') {
