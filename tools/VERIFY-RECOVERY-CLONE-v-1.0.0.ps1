@@ -28,11 +28,24 @@ function Test-IsUnder([string]$Child, [string]$Parent) {
 }
 
 function Get-ManifestField([object]$Row, [string[]]$Names) {
+    $normalizedNames = @($Names | ForEach-Object { (($_.Trim().Trim([char]0xFEFF).ToUpperInvariant()) -replace '[^A-Z0-9]', '') })
     foreach ($name in $Names) {
-        $property = $Row.PSObject.Properties | Where-Object { $_.Name.Trim().Trim([char]0xFEFF).Equals($name, [System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1
+        $property = $Row.PSObject.Properties | Where-Object {
+            $normalizedProperty = (($_.Name.Trim().Trim([char]0xFEFF).ToUpperInvariant()) -replace '[^A-Z0-9]', '')
+            $normalizedNames -contains $normalizedProperty
+        } | Select-Object -First 1
         if ($null -ne $property) { return [string]$property.Value }
     }
     return $null
+}
+
+function Normalize-ManifestColumn([string]$Name) {
+    return (($Name.Trim().Trim([char]0xFEFF).ToUpperInvariant()) -replace '[^A-Z0-9]', '')
+}
+
+function Test-ManifestColumn([string]$Column, [string[]]$Aliases) {
+    $normalizedColumn = Normalize-ManifestColumn $Column
+    return @($Aliases | ForEach-Object { Normalize-ManifestColumn $_ }) -contains $normalizedColumn
 }
 
 $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
@@ -96,30 +109,45 @@ try {
     }
     if ($cardArtFiles.Count -ne 0) { throw "Hay imágenes/arte de cartas: $($cardArtFiles.Count)" }
 
-    $header = Get-Content -LiteralPath $manifestPath -TotalCount 1 -ErrorAction Stop
+    $manifestLines = @(Get-Content -LiteralPath $manifestPath -ErrorAction Stop)
+    $headerIndex = -1
+    for ($i = 0; $i -lt [Math]::Min($manifestLines.Count, 50); $i++) {
+        if (-not [string]::IsNullOrWhiteSpace($manifestLines[$i]) -and $manifestLines[$i] -notmatch '^\s*#') {
+            if ($manifestLines[$i] -match "`t|;|,|\|") {
+                $headerIndex = $i
+                break
+            }
+        }
+    }
+    if ($headerIndex -lt 0) { throw 'No se encuentra una cabecera tabular en el manifiesto' }
+    $header = $manifestLines[$headerIndex]
+    Write-Host "MANIFEST HEADER: $header"
     if ($header -match "`t") {
         $manifestDelimiter = [char]9
     } elseif ($header -match ';') {
         $manifestDelimiter = ';'
     } elseif ($header -match ',') {
         $manifestDelimiter = ','
+    } elseif ($header -match '\|') {
+        $manifestDelimiter = '|'
     } else {
         throw "No se reconoce el separador del manifiesto. Cabecera: $header"
     }
-    $rows = @(Import-Csv -LiteralPath $manifestPath -Delimiter $manifestDelimiter)
+    $csvLines = $manifestLines[$headerIndex..($manifestLines.Count - 1)]
+    $rows = @($csvLines | ConvertFrom-Csv -Delimiter $manifestDelimiter)
     if ($rows.Count -eq 0) { throw 'El manifiesto está vacío' }
     $manifestColumns = @($rows[0].PSObject.Properties.Name | ForEach-Object { $_.Trim().Trim([char]0xFEFF) })
     Write-Host "MANIFEST COLUMNS: $($manifestColumns -join ', ')"
 
-    $pathColumnNames = @('RelativePath','Path','FilePath','FullName')
-    $lengthColumnNames = @('Length','Bytes','Size')
-    $hashColumnNames = @('SHA256','SHA-256','Hash')
-    $manifestPathColumn = $manifestColumns | Where-Object { $pathColumnNames -contains $_ } | Select-Object -First 1
-    $manifestHashColumn = $manifestColumns | Where-Object { $hashColumnNames -contains $_ } | Select-Object -First 1
+    $pathColumnNames = @('RelativePath','Relative Path','Relative_Path','Path','FilePath','FullName','File','Relative','RelPath','SourcePath')
+    $lengthColumnNames = @('Length','Bytes','Size','SizeBytes','FileSize','BytesSize')
+    $hashColumnNames = @('SHA256','SHA-256','SHA_256','SHA256Hash','Hash','Checksum','FileHash')
+    $manifestPathColumn = $manifestColumns | Where-Object { Test-ManifestColumn $_ $pathColumnNames } | Select-Object -First 1
+    $manifestHashColumn = $manifestColumns | Where-Object { Test-ManifestColumn $_ $hashColumnNames } | Select-Object -First 1
     if (-not $manifestPathColumn -or -not $manifestHashColumn) {
         throw "Formato de manifiesto inválido. Columnas detectadas: $($manifestColumns -join ', ')"
     }
-    $manifestLengthColumn = $manifestColumns | Where-Object { $lengthColumnNames -contains $_ } | Select-Object -First 1
+    $manifestLengthColumn = $manifestColumns | Where-Object { Test-ManifestColumn $_ $lengthColumnNames } | Select-Object -First 1
     $lengthChecksAvailable = [bool]$manifestLengthColumn
     Write-Host "MANIFEST PATH COLUMN: $manifestPathColumn"
     Write-Host "MANIFEST HASH COLUMN: $manifestHashColumn"
