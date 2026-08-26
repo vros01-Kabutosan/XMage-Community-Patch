@@ -2,11 +2,22 @@
 
 **Status: Mandatory and permanent**
 
+
+## Current protected checkpoint: RC1.3
+
+The current protected complete-source checkpoint is **RC1.3**.
+
+- Canonical protected branch: `port/1.4.61V1-community-patch`
+- Exact stable commit: `c96f1694854fb25d5d3e3c1928b573cbe9227ea3`
+- Immutable version tag to publish: `RC1.3`
+- Historical `RC1.1` remains unchanged and must never be rewritten or reused.
+
+
 This contract defines the only permitted development model for the XMage Community Patch. It applies to Victor, every human contributor, every AI system, every script, every automation, and every future version of the project.
 
 ## 1. Stable releases are immutable
 
-Any validated release identified as `RC1`, `RC1.1`, `RC1.2`, `RC2.0`, or a later stable checkpoint is a protected base.
+Any validated release identified as `RC1`, `RC1.1`, `RC1.2`, `RC1.3`, `RC2.0`, or a later stable checkpoint is a protected base.
 
 A stable base must never be modified directly, overwritten, rebuilt in place, or used as an experimental workspace.
 
@@ -46,7 +57,7 @@ Every new feature, mod, refactor, experiment, or test must start from a separate
 Examples:
 
 ```text
-RC1.1 stable
+RC1.3 stable
   -> work/stack-floating-v-1
   -> work/feature-name-v-1
 ```
@@ -64,10 +75,10 @@ If a work branch is broken, it is discarded. The stable base is restored by star
 Validated changes are accumulated and tested only in a development branch. When the selected changes are confirmed functional, the result is promoted to a new stable release:
 
 ```text
-RC1.1 stable
+RC1.3 stable
   -> work branch
   -> validated changes
-  -> RC1.2 or RC2.0
+  -> RC1.4 or RC2.0
   -> full verification
   -> protected stable checkpoint
 ```
