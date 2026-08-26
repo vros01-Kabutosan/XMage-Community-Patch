@@ -139,9 +139,9 @@ try {
     $manifestColumns = @($rows[0].PSObject.Properties.Name | ForEach-Object { $_.Trim().Trim([char]0xFEFF) })
     Write-Host "MANIFEST COLUMNS: $($manifestColumns -join ', ')"
 
-    $pathColumnNames = @('RelativePath','Relative Path','Relative_Path','Path','FilePath','FullName','File','Relative','RelPath','SourcePath')
-    $lengthColumnNames = @('Length','Bytes','Size','SizeBytes','FileSize','BytesSize')
-    $hashColumnNames = @('SHA256','SHA-256','SHA_256','SHA256Hash','Hash','Checksum','FileHash')
+    $pathColumnNames = @('RelativePath','Relative Path','Relative_Path','Path','FilePath','FullName','File','Relative','RelPath','SourcePath','Ruta','Archivo','Fichero')
+    $lengthColumnNames = @('Length','Bytes','Size','SizeBytes','FileSize','BytesSize','Tamaño','Tamano','Longitud')
+    $hashColumnNames = @('SHA256','SHA-256','SHA_256','SHA256Hash','Hash','Checksum','FileHash','Huella','HuellaSHA256','SHA256Hash')
     $manifestPathColumn = $manifestColumns | Where-Object { Test-ManifestColumn $_ $pathColumnNames } | Select-Object -First 1
     $manifestHashColumn = $manifestColumns | Where-Object { Test-ManifestColumn $_ $hashColumnNames } | Select-Object -First 1
     if (-not $manifestPathColumn -or -not $manifestHashColumn) {
