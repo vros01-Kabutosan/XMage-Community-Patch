@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$SourceRoot = 'J:\mtg\_ARCHIVO\00-FUENTE\rc1.1-complete-community',
-    [string]$SuperiorSource = 'J:\mtg\_ARCHIVO\MODS\MOD-004-SUPERIOR-SPIDER-MAN-v-1.0.3\BUILD\20260825-125014\source\rc1.1-complete-community\Mage.Sets\src\main\java\mage\cards\s\SuperiorSpiderMan.java',
+    [string]$SuperiorSource = '',
     [string]$ArchiveRoot = 'J:\mtg\_ARCHIVO',
     [string]$LogRoot = 'J:\mtg\_LOGS'
 )
@@ -26,7 +26,16 @@ try {
     Write-Host "Stage: $stage"
 
     if (-not (Test-Path -LiteralPath $SourceRoot -PathType Container)) { throw "SourceRoot not found" }
-    if (-not (Test-Path -LiteralPath $SuperiorSource -PathType Leaf)) { throw "SuperiorSource not found" }
+    if (-not $SuperiorSource) {
+        $modRoot = 'J:\mtg\_ARCHIVO\MODS\MOD-004-SUPERIOR-SPIDER-MAN-v-1.0.3'
+        $candidates = Get-ChildItem -LiteralPath $modRoot -Recurse -File -Filter 'SuperiorSpiderMan.java' -ErrorAction SilentlyContinue |
+            Where-Object { $_.FullName -notmatch '\\target\\' } |
+            Sort-Object LastWriteTime -Descending
+        if (-not $candidates) { throw "SuperiorSpiderMan.java not found under MOD-004" }
+        $SuperiorSource = $candidates[0].FullName
+        Write-Host "SUPERIOR AUTODETECTED: $SuperiorSource"
+    }
+    if (-not (Test-Path -LiteralPath $SuperiorSource -PathType Leaf)) { throw "SuperiorSource not found: $SuperiorSource" }
     if (Test-Path -LiteralPath $stage) { throw "Refusing to overwrite existing stage: $stage" }
 
     New-Item -ItemType Directory -Path $stage -Force | Out-Null
