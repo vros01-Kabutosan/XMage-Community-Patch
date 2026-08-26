@@ -26,6 +26,7 @@ if (-not (Test-Path -LiteralPath $InstallRoot -PathType Container)) {
 
 Write-Log "`n[INSTALL FILE INVENTORY: SHA256]"
 Get-ChildItem -LiteralPath $InstallRoot -File -Recurse -Force |
+    Where-Object { $_.Extension.ToLowerInvariant() -notin @('.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp') } |
     Sort-Object FullName |
     ForEach-Object {
         $relative = $_.FullName.Substring($InstallRoot.Length).TrimStart('\')
@@ -42,7 +43,7 @@ if ($SourceZip -and (Test-Path -LiteralPath $SourceZip -PathType Leaf)) {
     $archive = [System.IO.Compression.ZipFile]::OpenRead($SourceZip)
     try {
         Write-Log ("ZIP_ENTRIES`t{0}" -f $archive.Entries.Count)
-        $archive.Entries | Sort-Object FullName | ForEach-Object {
+        $archive.Entries | Where-Object { $_.FullName -notmatch '\.(jpg|jpeg|png|gif|webp|bmp)$' } | Sort-Object FullName | ForEach-Object {
             Write-Log ("{0}`t{1}" -f $_.FullName, $_.Length)
         }
     } finally {
