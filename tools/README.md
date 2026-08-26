@@ -16,6 +16,7 @@ This directory contains the reproducible, safety-gated PowerShell tooling for th
 - `VERIFY-RECOVERY-PACKAGE-v-1.0.0.ps1`: verifies ZIP safety and installability.
 - `COMPARE-RECOVERY-RESTORE-v-1.0.0.ps1`: proves restored files match the recovery manifest.
 - `COMPARE-ACTIVE-CLIENT-COPIES-v-1.0.0.ps1`: compares active client copies read-only.
+- `PROTECT-STABLE-BRANCH-v-1.0.0.ps1`: creates and verifies the GitHub ruleset for the stable branch using the operator's authenticated GitHub CLI session.
 
 ## Safety contract
 
@@ -25,5 +26,6 @@ This directory contains the reproducible, safety-gated PowerShell tooling for th
 - Generated `target/` directories, nested Git metadata, runtime logs, and card-art/image payloads are excluded where the tool contract says so.
 - The recovery package is a local/private operational artifact. Runtime paths, user configuration, and local hashes must not be committed to the public source branch.
 - A new stable source snapshot is promoted only after isolated build, verification, recovery, and restore comparison all pass.
+- The stable source branch must accept changes through a reviewed pull request and reject deletion and non-fast-forward updates.
 
 Older failed script revisions remain recoverable through Git history; they are intentionally absent from the working tree so operators use one unambiguous version of each procedure.
