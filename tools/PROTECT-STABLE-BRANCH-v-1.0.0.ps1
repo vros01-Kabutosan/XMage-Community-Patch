@@ -102,6 +102,7 @@ try {
         throw "Existe LOCK-STABLE-RC1.1 pero no coincide exactamente con la política; no se modifica"
     }
 
+    # Minimal documented ruleset body: omit optional empty arrays.
     $payload = [ordered]@{
         name = 'LOCK-STABLE-RC1.1'
         target = 'branch'
@@ -109,7 +110,6 @@ try {
         conditions = [ordered]@{
             ref_name = [ordered]@{
                 include = @($refName)
-                exclude = @()
             }
         }
         rules = @(
@@ -118,16 +118,15 @@ try {
             [ordered]@{
                 type = 'pull_request'
                 parameters = [ordered]@{
-                    allowed_merge_methods = @('squash')
+                    required_approving_review_count = 1
                     dismiss_stale_reviews_on_push = $true
                     require_code_owner_review = $false
                     require_last_push_approval = $false
-                    required_approving_review_count = 1
                     required_review_thread_resolution = $true
+                    allowed_merge_methods = @('squash')
                 }
             }
         )
-        bypass_actors = @()
     }
 
     $payloadJson = $payload | ConvertTo-Json -Depth 10
@@ -135,9 +134,15 @@ try {
     $payloadJson | Set-Content -LiteralPath $payloadPath -Encoding ASCII
     Write-Host "RULESET PAYLOAD: $payloadPath"
 
+    # Parse locally before sending so malformed JSON never reaches GitHub.
+    Get-Content -LiteralPath $payloadPath -Raw | ConvertFrom-Json | Out-Null
+    Write-Host 'LOCAL JSON VALID: yes'
+
     $createdJson = Invoke-GhApi -Arguments @(
         'api',
         '--method', 'POST',
+        '-H', 'Accept: application/vnd.github+json',
+        '-H', 'X-GitHub-Api-Version: 2022-11-28',
         "repos/$Repository/rulesets",
         '--input', $payloadPath
     )
