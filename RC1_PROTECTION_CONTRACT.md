@@ -126,7 +126,7 @@ The stable checkpoint is the protected reference. Experiments are disposable; th
 
 **A failed mod may lose its own sandbox. It may never lose the project, the stable installation, the last checkpoint, or the user's accumulated work.**
 
-## 9. RC1 and RC1.1 are protected shields
+## 9. RC1, RC1.1, and RC1.3 are protected shields
 
 **RC1** is the protected original stable baseline. It is never modified by experiments.
 
@@ -134,7 +134,7 @@ The stable checkpoint is the protected reference. Experiments are disposable; th
 
 **RC1**, **RC1.1**, and **RC1.3** are protected recovery points and shields. They are not development sandboxes, staging folders, or disposable branches. Every future mod starts from a separate new clone derived from one of these protected checkpoints.
 
-No future experiment may write directly into RC1, RC1.1, or RC1.3. If an experiment succeeds, it is promoted into a new separately named checkpoint only after full validation. If it fails, RC1 and RC1.1 remain untouched.
+No future experiment may write directly into RC1, RC1.1, or RC1.3. If an experiment succeeds, it is promoted into a new separately named checkpoint only after full validation. If it fails, RC1, RC1.1, and RC1.3 remain untouched.
 
 ### Regla definitiva
 
