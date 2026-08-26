@@ -161,8 +161,7 @@ try {
         '-H', 'Content-Type: application/json',
         '-H', 'X-GitHub-Api-Version: 2026-03-10',
         "repos/$Repository/rulesets",
-        '--input', $payloadPath,
-        '-q', '.'
+        '--input', $payloadPath
     ) -ErrorReportPath $apiResponsePath
     $created = $createdJson | ConvertFrom-Json
 
