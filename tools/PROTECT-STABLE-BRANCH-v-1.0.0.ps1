@@ -127,6 +127,7 @@ try {
         conditions = [ordered]@{
             ref_name = [ordered]@{
                 include = @($refName)
+                exclude = @()
             }
         }
         rules = @(
