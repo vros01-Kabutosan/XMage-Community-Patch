@@ -71,13 +71,16 @@ try {
         $details = $detailsJson | ConvertFrom-Json
         $includes = @($details.conditions.ref_name.include)
         $ruleTypes = @($details.rules | ForEach-Object { $_.type })
+        $pullRule = @($details.rules | Where-Object { $_.type -eq 'pull_request' }) | Select-Object -First 1
+        $mergeMethods = @($pullRule.parameters.allowed_merge_methods)
 
         if (
             $details.enforcement -eq 'active' -and
             $includes -contains $refName -and
             $ruleTypes -contains 'deletion' -and
             $ruleTypes -contains 'non_fast_forward' -and
-            $ruleTypes -contains 'pull_request'
+            $ruleTypes -contains 'pull_request' -and
+            $mergeMethods -contains 'squash'
         ) {
             [PSCustomObject][ordered]@{
                 Status = 'ALREADY_PROTECTED'
@@ -115,6 +118,7 @@ try {
             [ordered]@{
                 type = 'pull_request'
                 parameters = [ordered]@{
+                    allowed_merge_methods = @('squash')
                     dismiss_stale_reviews_on_push = $true
                     require_code_owner_review = $false
                     require_last_push_approval = $false
@@ -126,7 +130,9 @@ try {
         bypass_actors = @()
     }
 
-    $payload | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $payloadPath -Encoding UTF8
+    $payloadJson = $payload | ConvertTo-Json -Depth 10
+    # Windows PowerShell 5.1 writes a BOM with UTF8; GitHub's JSON parser rejects it.
+    $payloadJson | Set-Content -LiteralPath $payloadPath -Encoding ASCII
     Write-Host "RULESET PAYLOAD: $payloadPath"
 
     $createdJson = Invoke-GhApi -Arguments @(
@@ -149,13 +155,16 @@ try {
     $verify = $verifyJson | ConvertFrom-Json
     $verifiedTypes = @($verify.rules | ForEach-Object { $_.type })
     $verifiedIncludes = @($verify.conditions.ref_name.include)
+    $verifiedPullRule = @($verify.rules | Where-Object { $_.type -eq 'pull_request' }) | Select-Object -First 1
+    $verifiedMergeMethods = @($verifiedPullRule.parameters.allowed_merge_methods)
 
     if (
         $verify.enforcement -ne 'active' -or
         $verifiedIncludes -notcontains $refName -or
         $verifiedTypes -notcontains 'deletion' -or
         $verifiedTypes -notcontains 'non_fast_forward' -or
-        $verifiedTypes -notcontains 'pull_request'
+        $verifiedTypes -notcontains 'pull_request' -or
+        $verifiedMergeMethods -notcontains 'squash'
     ) {
         throw 'La verificación posterior no coincide con la política solicitada'
     }
