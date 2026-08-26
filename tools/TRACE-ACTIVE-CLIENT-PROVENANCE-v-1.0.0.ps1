@@ -43,8 +43,16 @@ function Get-RelativeSafePath {
 
 $transcriptStarted = $false
 try {
-    Start-Transcript -LiteralPath $runLog -Force | Out-Null
-    $transcriptStarted = $true
+    try {
+        Start-Transcript -LiteralPath $runLog -Force | Out-Null
+        $transcriptStarted = $true
+    } catch {
+        throw "RUN LOG could not be started: $($_.Exception.Message)"
+    }
+
+    if (-not (Test-Path -LiteralPath $runLog -PathType Leaf)) {
+        throw "RUN LOG was not created: $runLog"
+    }
 
     Write-Host 'TRACE ACTIVE CLIENT PROVENANCE v1.0.0'
     Write-Host "Started: $(Get-Date -Format o)"
@@ -185,6 +193,7 @@ try {
 
     Write-Host ''
     Write-Host 'RESULT: provenance scan completed'
+    Write-Host "RUN LOG: $runLog"
     Write-Host "JAR REPORT: $jarReport"
     Write-Host "SOURCE REPORT: $sourceReport"
     Write-Host "README: $readme"
