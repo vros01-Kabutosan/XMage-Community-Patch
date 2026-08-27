@@ -3,7 +3,9 @@ setlocal EnableExtensions EnableDelayedExpansion
 title XMage RC1.3 - Trigger Visual Smoke v1.1
 
 set "SCRIPT_DIR=%~dp0"
-for %%A in ("%SCRIPT_DIR%..\..") do set "REPO_ROOT=%%~fA"
+set "REPO_ROOT="
+for %%R in ("J:\xmage repositorio\XMage-Community-Patch-git" "J:\xmage repositorio\XMage-Community-Patch" "J:\mtg\_ARCHIVO\RC1.3-WORK-PILE") do if not defined REPO_ROOT if exist "%%~R\source\xmage\1.4.61V1-community-patch-v-1\pom.xml" set "REPO_ROOT=%%~R"
+if not defined REPO_ROOT for %%A in ("%SCRIPT_DIR%..\..") do if exist "%%~fA\source\xmage\1.4.61V1-community-patch-v-1\pom.xml" set "REPO_ROOT=%%~fA"
 set "SOURCE_ROOT=%REPO_ROOT%\source\xmage\1.4.61V1-community-patch-v-1"
 set "SERVER_MODULE=%SOURCE_ROOT%\Mage.Server"
 set "CLIENT_MODULE=%SOURCE_ROOT%\Mage.Client"
@@ -16,6 +18,7 @@ set "SMOKE_ROOT=J:\mtg\_SMOKE\RC1.3-trigger-v1.1_%STAMP%"
 set "SERVER_ROOT=%SMOKE_ROOT%\server"
 set "CLIENT_ROOT=%SMOKE_ROOT%\client"
 set "TRANSCRIPT=%LOG_DIR%\smoke_transcript.log"
+set "RESULT=1"
 
 if not exist "%LOG_DIR%" mkdir "%LOG_DIR%"
 if not exist "%SMOKE_ROOT%" mkdir "%SMOKE_ROOT%"
@@ -164,7 +167,6 @@ echo %~1
 exit /b 0
 
 :finish
-if not defined RESULT set "RESULT=1"
 if "%RESULT%"=="0" (
   echo.
   echo SMOKE VISUAL: CLIENTE ABIERTO Y SERVIDOR VERIFICADO
