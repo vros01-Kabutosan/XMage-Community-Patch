@@ -19,7 +19,8 @@ if not exist "%CLIENT_ROOT%\." goto FAIL_CLIENT_ROOT
 if not exist "%CLIENT_LIB%\mage-client-1.4.61.jar" goto FAIL_CLIENT_JAR
 if not exist "%CLIENT_LIB%\mage-common-1.4.61.jar" goto FAIL_COMMON_JAR
 
-set "JAVA_CMD=%TEMP%\xmage-tools\jdk17\jdk-17.0.20.1+1\bin\java.exe"
+set "JAVA_CMD="
+if exist "%TEMP%\xmage-tools\jdk17\." for /r "%TEMP%\xmage-tools\jdk17" %%P in (java.exe) do if not defined JAVA_CMD set "JAVA_CMD=%%P"
 if not exist "%JAVA_CMD%" set "JAVA_CMD=C:\Program Files\BellSoft\LibericaJDK-17\bin\java.exe"
 if not exist "%JAVA_CMD%" set "JAVA_CMD="
 if not exist "%JAVA_CMD%" for /f "delims=" %%P in ('where java.exe 2^>nul') do if not defined JAVA_CMD set "JAVA_CMD=%%P"
