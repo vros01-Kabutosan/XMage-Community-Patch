@@ -1,0 +1,58 @@
+name: RC1.3 candidate build
+
+on:
+  push:
+    branches:
+      - work/rc1.3-v-1.2.13-trigger-indicator
+  pull_request:
+    branches:
+      - protected/rc1.3-v-1.2.12
+      - port/1.4.61V1-community-patch
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rc1.3-candidate-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: source/rc1.1-complete-community
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+          cache-dependency-path: source/rc1.1-complete-community/pom.xml
+
+      - name: Show toolchain
+        run: |
+          java -version
+          mvn --version
+          git rev-parse HEAD
+
+      - name: Build complete source
+        run: mvn -B -ntp -DskipTests package
+
+      - name: Verify candidate artifacts and source boundary
+        run: |
+          test -f Mage.Client/target/mage-client-1.4.61.jar
+          test -f Mage.Common/target/mage-common-1.4.61.jar
+          test ! -d ../xmage
+          sha256sum Mage.Client/target/mage-client-1.4.61.jar Mage.Common/target/mage-common-1.4.61.jar > candidate-artifacts-sha256.txt
+          cat candidate-artifacts-sha256.txt
+
+      - name: Upload build manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: rc1.3-candidate-build-manifest
+          path: source/rc1.1-complete-community/candidate-artifacts-sha256.txt
