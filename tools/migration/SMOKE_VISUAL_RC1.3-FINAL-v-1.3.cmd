@@ -151,7 +151,7 @@ echo LOG: %LOG_DIR%
 echo.
 echo El proceso se detiene aqui. No se ejecutaran fases posteriores.
 pause
-exit /b 1
+exit
 
 :LOG
 >> "%TRANSCRIPT%" echo [%DATE% %TIME%] %~1
