@@ -145,7 +145,12 @@ goto :FINISH
 :ABORT
 set "RESULT=1"
 call :log "ERROR: %~1"
-goto :FINISH
+echo.
+echo SMOKE VISUAL: FALLIDO
+echo LOG: %LOG_DIR%
+echo.
+pause
+exit
 
 :LOG
 >> "%TRANSCRIPT%" echo [%DATE% %TIME%] %~1
