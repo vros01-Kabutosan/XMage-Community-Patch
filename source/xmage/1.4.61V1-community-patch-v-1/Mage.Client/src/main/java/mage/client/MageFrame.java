@@ -99,6 +99,7 @@ public class MageFrame extends javax.swing.JFrame implements MageClient {
     private static final String GUI_MODAL_MODE_PROP = "xmage.guiModalMode"; // -Dxmage.guiModalMode=false
     private static final String SKIP_DONE_SYMBOLS = "-skipDoneSymbols";
     private static final String DEBUG_ARG = "-debug"; // enable debug button in main menu
+    private static final String TRIGGER_INDICATOR_PREVIEW_ARG = "-triggerIndicatorPreview";
 
     private static final String NOT_CONNECTED_TEXT = "<not connected>";
     private static final String NOT_CONNECTED_BUTTON = "CONNECT TO SERVER";
@@ -121,6 +122,7 @@ public class MageFrame extends javax.swing.JFrame implements MageClient {
     private static boolean macOsFullScreenEnabled = true;
     private static boolean skipSmallSymbolGenerationForExisting = false;
     private static boolean debugMode = false;
+    private static boolean triggerIndicatorPreviewMode = false; // debug-only visual smoke
     private static boolean guiModalModeEnabled = false; // non-blocking UI mode enabled by default
 
     private JToggleButton switchPanelsButton = null; // from main menu
@@ -1559,6 +1561,10 @@ public class MageFrame extends javax.swing.JFrame implements MageClient {
                 if (arg.startsWith(DEBUG_ARG)) {
                     debugMode = true;
                 }
+                if (arg.startsWith(TRIGGER_INDICATOR_PREVIEW_ARG)) {
+                    triggerIndicatorPreviewMode = true;
+                    debugMode = true;
+                }
             }
 
             if (System.getProperty(FULL_SCREEN_PROP) != null) {
@@ -1628,6 +1634,9 @@ public class MageFrame extends javax.swing.JFrame implements MageClient {
             instance.btnDebug.setVisible(debugMode);
 
             instance.setVisible(true);
+            if (triggerIndicatorPreviewMode) {
+                SwingUtilities.invokeLater(() -> new TestCardRenderDialog().showDialog());
+            }
         });
     }
 
