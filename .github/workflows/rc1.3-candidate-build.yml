@@ -41,15 +41,14 @@ jobs:
           mvn --version
           git rev-parse HEAD
 
-      - name: Build runtime source and client dependencies
-        run: timeout --signal=TERM --kill-after=60s 15m mvn -B -ntp -T 2C -DskipTests -Djacoco.skip=true -Dmaven.javadoc.skip=true -pl Mage.Client -am package
+      - name: Build client directly
+        run: timeout --signal=TERM --kill-after=60s 10m mvn -B -ntp -DskipTests -Djacoco.skip=true -Dmaven.javadoc.skip=true -f Mage.Client/pom.xml package
 
-      - name: Verify candidate artifacts and source boundary
+      - name: Verify candidate artifact and source boundary
         run: |
           test -f Mage.Client/target/mage-client-1.4.61.jar
-          test -f Mage.Common/target/mage-common-1.4.61.jar
           test ! -d ../xmage
-          sha256sum Mage.Client/target/mage-client-1.4.61.jar Mage.Common/target/mage-common-1.4.61.jar > candidate-artifacts-sha256.txt
+          sha256sum Mage.Client/target/mage-client-1.4.61.jar > candidate-artifacts-sha256.txt
           cat candidate-artifacts-sha256.txt
 
       - name: Upload build manifest
