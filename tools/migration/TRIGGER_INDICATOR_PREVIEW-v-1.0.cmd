@@ -57,7 +57,14 @@ for %%M in (
     "%TEMP%\apache-maven-3.8.8\bin\mvn.cmd"
 ) do if not defined MVN_CMD if exist "%%~M" set "MVN_CMD=%%~M"
 if not defined MVN_CMD for /f "delims=" %%M in ('where mvn.cmd 2^>nul') do if not defined MVN_CMD set "MVN_CMD=%%~M"
-if not defined MVN_CMD (call :FAIL "Maven 3.8.8 no esta disponible." & exit /b 1)
+if not defined MVN_CMD (
+    set "MAVEN_HOME=%TEMP%\apache-maven-3.8.8"
+    call :LOG "Maven no estaba disponible: descargando Apache Maven 3.8.8 automaticamente."
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $z=Join-Path $env:TEMP 'apache-maven-3.8.8-bin.zip'; Invoke-WebRequest -UseBasicParsing -Uri 'https://archive.apache.org/dist/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.zip' -OutFile $z; Expand-Archive -LiteralPath $z -DestinationPath $env:TEMP -Force" > "%LOG_DIR%\maven_download.log" 2>&1
+    if errorlevel 1 (call :FAIL "No se pudo descargar Maven automaticamente." & exit /b 1)
+    if not exist "%MAVEN_HOME%\bin\mvn.cmd" (call :FAIL "Maven no quedo disponible tras la descarga." & exit /b 1)
+    set "MVN_CMD=%MAVEN_HOME%\bin\mvn.cmd"
+)
 "%MVN_CMD%" -version > "%LOG_DIR%\maven_version.log" 2>&1
 if errorlevel 1 (call :FAIL "Maven no puede ejecutarse." & exit /b 1)
 call :LOG "Maven listo. Compilando: el avance se muestra en pantalla y queda en maven_full.log."
