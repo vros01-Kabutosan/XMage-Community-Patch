@@ -1,6 +1,10 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
 title XMage RC1.3 - Trigger Visual Smoke v1.1
+set "RESULT=1"
+goto :MAIN
+
+:MAIN
 
 set "SCRIPT_DIR=%~dp0"
 set "REPO_ROOT="
@@ -159,7 +163,7 @@ goto :finish
 :fail
 call :log "ERROR: %~1"
 set "RESULT=1"
-exit /b 0
+exit /b 1
 
 :log
 >> "%TRANSCRIPT%" echo [%DATE% %TIME%] %~1
