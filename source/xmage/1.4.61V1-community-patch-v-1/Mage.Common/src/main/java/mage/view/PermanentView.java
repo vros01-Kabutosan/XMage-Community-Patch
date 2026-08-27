@@ -39,6 +39,7 @@ public class PermanentView extends CardView {
     private final boolean attachedControllerDiffers;
     private final MutateView mutateView;
     private final boolean mutated;
+    private boolean activeTrigger = false;
 
     public PermanentView(Permanent permanent, Card card, UUID createdForPlayerId, Game game) {
         super(permanent, game, CardUtil.canShowAsControlled(permanent, createdForPlayerId));
@@ -73,6 +74,7 @@ public class PermanentView extends CardView {
         this.copy = permanent.isCopy();
         this.mutateView = new MutateView(permanent, game);
         this.mutated = permanent.getMutateCount() > 0;
+        this.activeTrigger = checkActiveTrigger(permanent, game);
 
         // for fipped, transformed or copied cards, switch the names
         if (original != null && !original.getName().equals(this.getName())) {
@@ -155,6 +157,7 @@ public class PermanentView extends CardView {
         this.attachedControllerDiffers = permanentView.attachedControllerDiffers;
         this.mutateView = permanentView.mutateView;
         this.mutated = permanentView.mutated;
+        this.activeTrigger = permanentView.activeTrigger;
     }
 
     public boolean isTapped() {
@@ -243,5 +246,28 @@ public class PermanentView extends CardView {
 
     public boolean isMutated() {
         return mutated;
+    }
+
+    private boolean checkActiveTrigger(Permanent permanent, Game game) {
+        if (game == null) {
+            return false;
+        }
+        for (mage.game.stack.StackObject stackObject : game.getStack()) {
+            if (stackObject instanceof mage.game.stack.StackAbility) {
+                mage.game.stack.StackAbility stackAbility = (mage.game.stack.StackAbility) stackObject;
+                if (stackAbility.getSourceId().equals(permanent.getId())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean hasActiveTrigger() {
+        return activeTrigger;
+    }
+
+    public void setActiveTrigger(boolean activeTrigger) {
+        this.activeTrigger = activeTrigger;
     }
 }

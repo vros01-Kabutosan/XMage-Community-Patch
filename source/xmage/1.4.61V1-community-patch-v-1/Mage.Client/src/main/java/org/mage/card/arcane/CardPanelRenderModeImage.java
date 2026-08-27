@@ -504,7 +504,20 @@ public class CardPanelRenderModeImage extends CardPanel {
                                 hasImage, isSelected(), isChoosable(), getGameCard().isPlayable(), getGameCard().isCanAttack(),
                                 getGameCard().isCanBlock())),
                 0, 0, cardLocation.getCardWidth(), cardLocation.getCardHeight(), null);
-        g2d.dispose();
+        if (getGameCard() instanceof mage.view.PermanentView) {
+    mage.view.PermanentView pv = (mage.view.PermanentView) getGameCard();
+    if (pv.hasActiveTrigger()) {
+        int indicatorSize = Math.max(10, getCardWidth() / 10);
+        int x = getCardWidth() - indicatorSize - 5;
+        int y = 5;
+        g2d.setColor(Color.RED);
+        g2d.fillOval(x, y, indicatorSize, indicatorSize);
+        g2d.setColor(Color.WHITE);
+        g2d.setFont(new Font("Arial", Font.BOLD, indicatorSize));
+        g2d.drawString("!", x + indicatorSize/4, y + indicatorSize*3/4);
+    }
+}
+g2d.dispose();
     }
 
     @Override
