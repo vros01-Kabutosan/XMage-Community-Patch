@@ -212,7 +212,7 @@ if (getGameCard() instanceof mage.view.PermanentView) {
         g2.fillOval(x, y, indicatorSize, indicatorSize);
         g2.setColor(Color.WHITE);
         g2.setFont(new Font("Arial", Font.BOLD, indicatorSize));
-        g2.drawString("!", x + indicatorSize/4, y + indicatorSize*3/4);
+        g2.drawString("T", x + indicatorSize/4, y + indicatorSize*3/4);
     }
 }
             } else {
@@ -227,7 +227,7 @@ if (getGameCard() instanceof mage.view.PermanentView) {
         g2.fillOval(x, y, indicatorSize, indicatorSize);
         g2.setColor(Color.WHITE);
         g2.setFont(new Font("Arial", Font.BOLD, indicatorSize));
-        g2.drawString("!", x + indicatorSize/4, y + indicatorSize*3/4);
+        g2.drawString("T", x + indicatorSize/4, y + indicatorSize*3/4);
     }
 }
             }
