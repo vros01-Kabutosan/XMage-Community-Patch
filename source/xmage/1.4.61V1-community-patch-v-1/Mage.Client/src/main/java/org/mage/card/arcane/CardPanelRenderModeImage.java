@@ -504,7 +504,7 @@ public class CardPanelRenderModeImage extends CardPanel {
                                 hasImage, isSelected(), isChoosable(), getGameCard().isPlayable(), getGameCard().isCanAttack(),
                                 getGameCard().isCanBlock())),
                 0, 0, cardLocation.getCardWidth(), cardLocation.getCardHeight(), null);
-        g2d.dispose();
+g2d.dispose();
     }
 
     @Override
@@ -548,6 +548,37 @@ public class CardPanelRenderModeImage extends CardPanel {
             int manaY = cardOffsetY + manaMarginTop;
 
             ManaSymbols.draw(g, manaCost, manaX, manaY, getSymbolWidth(), ModernCardRenderer.MANA_ICONS_TEXT_COLOR, symbolMarginX);
+        }
+
+        drawActiveTriggerIndicator(g);
+    }
+
+    private void drawActiveTriggerIndicator(Graphics g) {
+        if (!(getGameCard() instanceof mage.view.PermanentView)
+                || !((mage.view.PermanentView) getGameCard()).hasActiveTrigger()) {
+            return;
+        }
+
+        Graphics2D indicatorGraphics = (Graphics2D) g.create();
+        try {
+            indicatorGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            int indicatorSize = Math.max(16, Math.round(imagePanel.getWidth() * 0.10f));
+            int margin = Math.max(4, Math.round(indicatorSize * 0.16f));
+            int x = imagePanel.getX() + imagePanel.getWidth() - indicatorSize - margin;
+            int y = imagePanel.getY() + margin;
+
+            indicatorGraphics.setColor(Color.RED);
+            indicatorGraphics.fillOval(x, y, indicatorSize, indicatorSize);
+            indicatorGraphics.setColor(Color.WHITE);
+            Font font = new Font("Arial", Font.BOLD, Math.max(12, Math.round(indicatorSize * 0.70f)));
+            indicatorGraphics.setFont(font);
+            FontMetrics metrics = indicatorGraphics.getFontMetrics(font);
+            String marker = "T";
+            int textX = x + (indicatorSize - metrics.stringWidth(marker)) / 2;
+            int textY = y + (indicatorSize - metrics.getHeight()) / 2 + metrics.getAscent();
+            indicatorGraphics.drawString(marker, textX, textY);
+        } finally {
+            indicatorGraphics.dispose();
         }
     }
 

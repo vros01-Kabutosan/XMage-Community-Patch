@@ -202,8 +202,34 @@ public class CardPanelRenderModeMTGO extends CardPanel {
             // render scaled
             if (MTGO_MODE_RENDER_SCALED_IMAGES_COEF > 1) {
                 g2.drawImage(cardImage, cardOffsetX, cardOffsetY, getCardWidth(), getCardHeight(), null);
+if (getGameCard() instanceof mage.view.PermanentView) {
+    mage.view.PermanentView pv = (mage.view.PermanentView) getGameCard();
+    if (pv.hasActiveTrigger()) {
+        int indicatorSize = Math.max(10, getCardWidth() / 10);
+        int x = getCardWidth() - indicatorSize - 5;
+        int y = 5;
+        g2.setColor(Color.RED);
+        g2.fillOval(x, y, indicatorSize, indicatorSize);
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.BOLD, indicatorSize));
+        g2.drawString("T", x + indicatorSize/4, y + indicatorSize*3/4);
+    }
+}
             } else {
                 g2.drawImage(cardImage, cardOffsetX, cardOffsetY, null);
+if (getGameCard() instanceof mage.view.PermanentView) {
+    mage.view.PermanentView pv = (mage.view.PermanentView) getGameCard();
+    if (pv.hasActiveTrigger()) {
+        int indicatorSize = Math.max(10, getCardWidth() / 10);
+        int x = getCardWidth() - indicatorSize - 5;
+        int y = 5;
+        g2.setColor(Color.RED);
+        g2.fillOval(x, y, indicatorSize, indicatorSize);
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.BOLD, indicatorSize));
+        g2.drawString("T", x + indicatorSize/4, y + indicatorSize*3/4);
+    }
+}
             }
         } finally {
             g2.dispose();
