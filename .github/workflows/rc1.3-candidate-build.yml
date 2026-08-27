@@ -19,6 +19,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: source/rc1.1-complete-community
@@ -41,7 +42,7 @@ jobs:
           git rev-parse HEAD
 
       - name: Build complete source
-        run: mvn -B -ntp -DskipTests package
+        run: timeout --signal=TERM --kill-after=60s 25m mvn -B -ntp -DskipTests package
 
       - name: Verify candidate artifacts and source boundary
         run: |
