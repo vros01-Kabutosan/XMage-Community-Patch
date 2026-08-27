@@ -65,7 +65,7 @@ if not defined MVN_CMD (
     if not exist "%MAVEN_HOME%\bin\mvn.cmd" (call :FAIL "Maven no quedo disponible tras la descarga." & exit /b 1)
     set "MVN_CMD=%MAVEN_HOME%\bin\mvn.cmd"
 )
-"%MVN_CMD%" -version > "%LOG_DIR%\maven_version.log" 2>&1
+call "%MVN_CMD%" -version > "%LOG_DIR%\maven_version.log" 2>&1
 if errorlevel 1 (call :FAIL "Maven no puede ejecutarse." & exit /b 1)
 call :LOG "Maven listo. Compilando: el avance se muestra en pantalla y queda en maven_full.log."
 powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; Push-Location -LiteralPath '%SOURCE_ROOT%'; try { & '%MVN_CMD%' -DskipTests package -pl Mage.Client -am 2>&1 | Tee-Object -FilePath '%LOG_DIR%\maven_full.log'; exit $LASTEXITCODE } finally { Pop-Location }"
