@@ -419,7 +419,9 @@ public class TestCardRenderDialog extends MageDialog {
         List<CardView> cardViews = new ArrayList<>();
 
         //* test face down
-        cardViews.add(createPermanentCard(game, playerYou.getId(), "RNA", "263", 0, 0, 0, false, false, null)); // mountain
+        PermanentView triggerIndicatorPreview = createPermanentCard(game, playerYou.getId(), "RNA", "263", 0, 0, 0, false, false, null); // mountain
+        triggerIndicatorPreview.setActiveTrigger(true); // debug-only rendering smoke
+        cardViews.add(triggerIndicatorPreview);
         cardViews.add(createPermanentCard(game, playerYou.getId(), "RNA", "185", 0, 0, 0, true, false, null)); // Judith, the Scourge Diva
         cardViews.add(createHandCard(game, playerYou.getId(), "DIS", "153")); // Odds // Ends (split card)
         cardViews.add(createHandCard(game, playerYou.getId(), "ELD", "38")); // Animating Faerie (adventure card)
