@@ -257,3 +257,21 @@ La IA no puede:
 Un mod solo existe como mod válido cuando su paquete, logs, manifiesto, hashes, compilación, smoke, estado y rollback están presentes y son coherentes entre sí. Si falta un solo elemento, el resultado es `FAILED` o queda detenido en el estado anterior; nunca se interpreta como aprobado.
 
 La RC1.3 blindada es siempre la base de retorno. Ningún experimento, IA, herramienta, script, mod estable o mod fallido puede alterar esa base ni eliminar la evidencia de su existencia.
+
+
+## Norma permanente de higiene del repositorio
+
+Esta norma es fija y no requiere una orden adicional del operador.
+
+- Cada nuevo mod parte exclusivamente de la rama predeterminada canónica.
+- Para cada mod se crea una única rama temporal con nomenclatura versionada.
+- No se crean ramas duplicadas, auxiliares, "final", "latest", "test", "fixed" ni variantes equivalentes.
+- Las pruebas se realizan únicamente en un clon aislado; nunca en la instalación estable.
+- Un mod fallido se marca FAILED, se conserva su evidencia mínima en logs y se retira su rama temporal; nunca contamina la base ni se mezcla con otro trabajo.
+- Un mod aprobado se integra mediante una única PR; después de la fusión se elimina su rama temporal.
+- La siguiente tarea siempre parte de la nueva base estable verificada, identificada por nombre, versión y SHA.
+- Las bases anteriores se conservan únicamente como releases o backups de emergencia claramente etiquetados; no se ofrecen como bases de trabajo.
+- Antes de clonar o modificar, toda IA debe verificar rama, versión, SHA, POM raíz, módulos, configuración y manifiesto. Si uno no coincide, debe detenerse.
+- No se considera válido ningún resultado que deje ramas ambiguas, builds duplicadas, artefactos temporales o referencias sin estado.
+
+El objetivo es que una persona o IA pueda abrir el repositorio y saber sin interpretar nombres históricos cuál es la única base de trabajo vigente.
