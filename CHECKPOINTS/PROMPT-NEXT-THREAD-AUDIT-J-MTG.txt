@@ -1,0 +1,22 @@
+CONTINUAR XMAGE DESDE RC1.3-BLINDADA-COMPLETE
+
+La RC1.3 ya esta cerrada y sellada con FINAL_SEAL: PASS. No reconstruir ni pedir materiales de nuevo.
+
+Siguiente objetivo unico: auditar y limpiar J:\\mtg, estimado en mas de 400 GB de material muerto.
+
+Leer primero:
+docs/NEXT-THREAD-AUDIT-CLEANUP-J-MTG.md
+docs/CIERRE-DEFINITIVO-RC1.3-20260822-015725.md
+
+Reglas absolutas:
+- no tocar J:\\mtg\\xmage;
+- no tocar PRIVADO-BLINDADO-XMAGE;
+- no tocar RC1.1-COMPLETA-PORTABLE;
+- no tocar ninguna copia estable o blindada;
+- no usar /MIR;
+- no borrar nada durante la primera auditoria;
+- todo debe generar log en J:\\mtg\\_LOGS;
+- usar cuarentena reversible antes de eliminar;
+- conservar RC1.3, fuente exacta, smoke, herramientas, scripts validos, logs, manifests y backups certificados.
+
+Empezar solo con inventario de lectura, tamanos, fechas, hashes y duplicados. Detenerse si una ruta es ambigua o parece blindada.

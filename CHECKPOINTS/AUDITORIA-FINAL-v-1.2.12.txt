@@ -1,0 +1,17 @@
+XMAGE COMMUNITY PATCH — AUDITORIA FINAL v-1.2.12
+
+Maven BUILD SUCCESS: PASS
+JAR final aislado SHA256: 743D1FC07B2E1453B82F6BD5A97745A37822716E271922DD75AAE57B12A38E63
+Servidor estable J:\mtg\xmage: no modificado
+Smoke aislado: puerto fallback 17172
+Configuracion personal e imagenes oficiales enlazadas: registradas
+
+Gate pendiente: publicar y verificar en esta rama los tres archivos exactos que produjeron el JAR:
+- GamePanel.java
+- Cards.java
+- MageActionCallback.java
+
+La activacion, limpieza y blindaje estable no se cierran hasta repetir el SHA256 del JAR despues de publicar esa fuente exacta.
+
+Herramienta preparada:
+activation/PUBLICAR-FUENTE-EXACTA-v-1.2.12.cmd
