@@ -41,8 +41,8 @@ jobs:
           mvn --version
           git rev-parse HEAD
 
-      - name: Build complete source
-        run: timeout --signal=TERM --kill-after=60s 15m mvn -B -ntp -T 2C -DskipTests -Dmaven.javadoc.skip=true package
+      - name: Build runtime source and client dependencies
+        run: timeout --signal=TERM --kill-after=60s 15m mvn -B -ntp -T 2C -DskipTests -Dmaven.javadoc.skip=true -pl Mage.Client -am package
 
       - name: Verify candidate artifacts and source boundary
         run: |
