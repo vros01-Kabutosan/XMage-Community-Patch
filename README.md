@@ -1,65 +1,30 @@
-# XMage Community Patch — RC1 / 1.4.61V1
+# XMage Community Patch
 
-Independent community source snapshot for XMage 1.4.61V1. This project is not
-official XMage and is not affiliated with the upstream maintainers.
+This repository uses an immutable-base workflow for the XMage RC1.3 line.
 
-## Canonical stable source
+## Start here
 
-The canonical source branch is:
+- Canonical recovered base: protected/rc1.3-v-1.2.12
+- Current candidate: work/rc1.3-v-1.2.13-trigger-indicator
+- Compatibility/default pointer: port/1.4.61V1-community-patch
 
-`port/1.4.61V1-community-patch`
+The compatibility pointer is never a development branch. It must point only to a promoted and verified protected base. Do not select a branch by its age, timestamp, commit count, or name similarity.
 
-It contains the complete RC1.1 / XMage 1.4.61 source tree with the latest
-accepted source integration, including the corrected Superior Spider-Man card
-implementation:
+## Source of truth
 
-`source/xmage/1.4.61V1-community-patch-v-1`
+The complete source for this generation is under source/rc1.1-complete-community. The protected base includes the game UI, stack work, layout work, and the complete source tree. The previous partial source line is archived and is not a valid starting point.
 
-The source snapshot was built successfully with Maven. Generated
-`target/` directories, nested `.git/` directories, runtime logs, user
-profiles, and card-art/image payloads are intentionally excluded from source
-publication.
+Read CURRENT-BASE.md and docs/BASE-REGISTRY.md before changing anything.
 
-## Repository contract
+## Non-negotiable safety rules
 
-- Stable source snapshots are immutable reference points.
-- New work starts from a clone of the latest validated snapshot.
-- Changes are made in isolated work branches and promoted only after build,
-  verification, rollback, and restore checks pass.
-- Client and server artifacts must come from the same XMage 1.4.61V1 build.
-- Every operational script must write a transcript to the caller-provided log
-  root.
-- No workflow uses `/MIR`; destructive synchronization is forbidden.
-- Local installation data, preferences, runtime logs, and card images are not
-  committed to the public source tree.
+- Work only from the exact protected base named in CURRENT-BASE.md.
+- Use a new work branch for every change.
+- Never modify the installed Windows copy directly.
+- Never replace only a client JAR when the base contains coordinated client, common, server, plugin, or resource changes.
+- A candidate is not stable until the full build, hashes, smoke test, activation backup, and post-activation verification all pass.
+- Any failed gate stops the process and leaves the previous stable base untouched.
 
-Read the mandatory rules in
-[`PROJECT-CONTRACT-IMMUTABLE-STABILITY.md`](PROJECT-CONTRACT-IMMUTABLE-STABILITY.md)
-and [`RC1_PROTECTION_CONTRACT.md`](RC1_PROTECTION_CONTRACT.md).
+## For contributors
 
-## Build
-
-From the complete source directory:
-
-```powershell
-mvn clean verify
-```
-
-Use the Java/Maven versions documented by the source tree and record the full
-build log. Do not build over a protected installation.
-
-## Recovery and user data
-
-The tested Windows recovery clone, launcher/runtime files, accepted settings,
-deck catalogue, and image payload are operational artifacts separate from this
-public source snapshot. Their manifests and verification records must remain
-private unless explicitly approved for publication.
-
-The public repository provides the source, contracts, manifests, documentation,
-and safety tooling required to reproduce and audit the build. It is not a
-substitute for the tested recovery package.
-
-## License and notices
-
-See [LICENSE](LICENSE) and
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+The complete workflow is in CONTRIBUTING.md and docs/WORKFLOW.md. Pull requests must identify the exact base commit and include reproducible build and smoke evidence.
