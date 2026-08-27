@@ -51,17 +51,35 @@ if errorlevel 1 (
   goto :finish
 )
 java -version > "%LOG_DIR%\java_version.log" 2>&1
-where mvn > "%LOG_DIR%\maven_where.log" 2>&1
-if errorlevel 1 (
-  call :fail "Maven no esta disponible en PATH."
+set "MVN_CMD="
+for %%M in ("J:\tools\apache-maven-3.8.8\bin\mvn.cmd" "J:\mtg\tools\apache-maven-3.8.8\bin\mvn.cmd" "C:\Program Files\Apache Maven\bin\mvn.cmd") do if not defined MVN_CMD if exist "%%~M" set "MVN_CMD=%%~M"
+if not defined MVN_CMD for /f "delims=" %%M in ('where mvn.cmd 2^>nul') do if not defined MVN_CMD set "MVN_CMD=%%M"
+if not defined MVN_CMD (
+  set "MAVEN_BOOT=%TEMP%\xmage-maven-3.8.8"
+  if not exist "!MAVEN_BOOT!\bin\mvn.cmd" (
+    call :log "Maven no esta en PATH. Descargando Apache Maven 3.8.8 automaticamente."
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "$z=Join-Path $env:TEMP 'apache-maven-3.8.8-bin.zip'; Invoke-WebRequest -UseBasicParsing -Uri 'https://archive.apache.org/dist/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.zip' -OutFile $z; Expand-Archive -LiteralPath $z -DestinationPath $env:TEMP -Force" > "%LOG_DIR%\maven_download.log" 2>&1
+    if errorlevel 1 (
+      call :fail "No se pudo descargar Maven 3.8.8."
+      goto :finish
+    )
+  )
+  if exist "!MAVEN_BOOT!\bin\mvn.cmd" set "MVN_CMD=!MAVEN_BOOT!\bin\mvn.cmd"
+)
+if not defined MVN_CMD (
+  call :fail "No se pudo localizar ni preparar Maven."
   goto :finish
 )
-mvn -version > "%LOG_DIR%\maven_version.log" 2>&1
+"%MVN_CMD%" -version > "%LOG_DIR%\maven_version.log" 2>&1
+if errorlevel 1 (
+  call :fail "Maven localizado pero no puede ejecutarse."
+  goto :finish
+)
 call :log "Java y Maven detectados. Consulta los logs de versiones."
 
 call :log "Compilando distribuciones Assembly de servidor y cliente."
 pushd "%SOURCE_ROOT%"
-mvn -DskipTests package assembly:single -pl Mage.Server,Mage.Client -am > "%LOG_DIR%\maven_stdout.log" 2> "%LOG_DIR%\maven_stderr.log"
+"%MVN_CMD%" -DskipTests package assembly:single -pl Mage.Server,Mage.Client -am > "%LOG_DIR%\maven_stdout.log" 2> "%LOG_DIR%\maven_stderr.log"
 set "MAVEN_RC=%ERRORLEVEL%"
 popd
 call :log "Maven exit code=%MAVEN_RC%"
