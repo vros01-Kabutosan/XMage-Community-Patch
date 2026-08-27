@@ -42,7 +42,7 @@ jobs:
           git rev-parse HEAD
 
       - name: Build runtime source and client dependencies
-        run: timeout --signal=TERM --kill-after=60s 15m mvn -B -ntp -T 2C -DskipTests -Dmaven.javadoc.skip=true -pl Mage.Client -am package
+        run: timeout --signal=TERM --kill-after=60s 15m mvn -B -ntp -T 2C -DskipTests -Djacoco.skip=true -Dmaven.javadoc.skip=true -pl Mage.Client -am package
 
       - name: Verify candidate artifacts and source boundary
         run: |
