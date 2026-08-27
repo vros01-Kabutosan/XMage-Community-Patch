@@ -4,6 +4,8 @@ import mage.cards.Card;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.PermanentToken;
+import mage.game.stack.StackAbility;
+import mage.game.stack.StackObject;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -252,10 +254,11 @@ public class PermanentView extends CardView {
         if (game == null) {
             return false;
         }
-        for (mage.game.stack.StackObject stackObject : game.getStack()) {
-            if (stackObject instanceof mage.game.stack.StackAbility) {
-                mage.game.stack.StackAbility stackAbility = (mage.game.stack.StackAbility) stackObject;
-                if (stackAbility.getSourceId().equals(permanent.getId())) {
+        for (StackObject stackObject : game.getStack()) {
+            if (stackObject instanceof StackAbility) {
+                StackAbility stackAbility = (StackAbility) stackObject;
+                if (stackAbility.isTriggeredAbility()
+                        && permanent.getId().equals(stackAbility.getSourceId())) {
                     return true;
                 }
             }
