@@ -1,33 +1,27 @@
-# Continuidad XMage desde RC1.3
+# HISTÓRICO — NO USAR COMO CONTINUIDAD ACTIVA
 
-## Orden obligatorio
+Este documento pertenece a un flujo anterior de XMage y se conserva únicamente
+para auditoría histórica. Sus ramas, fundaciones, rutas y paquetes ya no son
+fuentes operativas y no deben utilizarse para compilar, activar ni preparar un
+nuevo mod.
 
-1. Leer `CHECKPOINT-RC1.3-BLINDADA-COMPLETE.md`.
-2. Leer `docs/CHECKPOINT-MAESTRO-v-1.2.12.md`, `docs/ACTIVATION-RESULT-v-1.2.12.1.txt` y `docs/AUDITORIA-FINAL-v-1.2.12.txt`.
-3. Revisar primero los logs de `logs/`; identificar el primer fallo real antes de crear una versión nueva.
-4. Verificar la fundación por tag y SHA autorizados.
-5. Trabajar únicamente en un clon aislado bajo `J:\mtg\_ARCHIVO\RC1.1-WORK-PILE-1.1`.
-6. Mantener la configuración personal, el perfil `J:\mtg\xmage\client`, HKCU, UI scale 1.5, memoria 4G y las imágenes por enlace de lectura.
-7. Compilar con Maven portable Apache Maven 3.9.15 y exigir `BUILD SUCCESS` real.
-8. Calcular SHA256 del JAR final y guardarlo en `J:\mtg\_LOGS`.
-9. Ejecutar servidor aislado y smoke visual con puerto libre confirmado.
-10. Verificar que el cliente carga el JAR generado, la configuración personal y la misma versión de servidor.
-11. Probar pila de 1, 2, 3 y más objetos, counters con varios objetivos, selección, interacción y orden LIFO.
-12. Solo después de todos los gates preparar activación controlada con backup.
+La continuidad vigente está en:
 
-## Prohibiciones
+- `CHECKPOINTS/NEXT-THREAD-CANONICAL-RC1.3-v-1.0.0.md`
+- `SOURCE-OF-TRUTH.md`
 
-- No usar `main` como base.
-- No usar `/MIR`.
-- No tocar, borrar, limpiar ni sobrescribir las bases estables blindadas.
-- No copiar imágenes oficiales dentro del clon.
-- No mezclar cambios de pila con IA, dado, selector u otras líneas cerradas.
-- No crear nomenclaturas encadenadas: usar el siguiente número corto, por ejemplo `v-1.2.13`.
+Fuente canónica actual:
 
-## Estado conocido
+- Rama: `protected/rc1.3-v-1.2.12`
+- Fuente completa: `source/rc1.1-complete-community`
+- POM raíz: `source/rc1.1-complete-community/pom.xml`
+- Estado: RC1.3 estable, sellada y pre-T
+- Asset validado:
+  `RC1.3-STABLE-SOURCE-v-1.0.7`
+- SHA-256 del asset:
+  `78b5386c1dd3133f93418fdf930cb652e1bddd4bc4866b59b82aa39d7a4ef5fa`
 
-La funcionalidad está aceptada. Persisten únicamente los dos detalles cosméticos descritos en el checkpoint: recorte ligero de texto y del botón `Done` según la geometría de la ventana. No son motivo para reabrir esta etapa.
-
-## Material disponible
-
-Este paquete contiene los logs, paquetes de interacción, kits de activación, publicación de fuente, reparación de recursos y evidencias visuales. El material exacto de continuidad queda accesible sin depender de adjuntos de una conversación concreta.
+Regla: si cualquier dato de este documento contradice
+`SOURCE-OF-TRUTH.md`, prevalece `SOURCE-OF-TRUTH.md` y la operación debe
+detenerse. No selecciones una fuente por nombre, fecha, antigüedad, número de
+commits o similitud de ramas.
