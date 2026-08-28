@@ -10,15 +10,19 @@ this file, the operation must stop.
 
 - Repository: vros01-Kabutosan/XMage-Community-Patch
 - Canonical ref: protected/rc1.3-v-1.2.12
-- Canonical source commit: 78bc19478d56eb4d07e98df991af437ad6d2318b
+- Sealed source-tree commit: 414e463c8bec4913a716dc2840c9002f503f81a7
 - Complete source root: source/rc1.1-complete-community
 - Root POM: source/rc1.1-complete-community/pom.xml
 - Source version: XMage 1.4.61 / RC1.3
 - Stable state: pre-T; the trigger indicator is intentionally not included
 
-The commit 78bc194... is the exact source-tree state used by the protected
-generation. Its only change after 289337b... is workflow documentation outside
-the source tree. The validated complete-source asset is:
+The sealed commit is the canonical source-tree state after removing generated
+residue only. No Java source, resource, plugin, server, client or game behavior
+was changed by that cleanup. The source content is the same as the validated
+source baseline 78bc194...; the latter had only workflow documentation relative
+to 289337b... before the cleanup.
+
+The validated complete-source asset is:
 
 - Release: RC1.3-STABLE-SOURCE-v-1.0.7
 - Asset: IMPORT-CURRENT-STABLE-SOURCE-v-1.0.7-20260826-032506-CLEAN.zip
