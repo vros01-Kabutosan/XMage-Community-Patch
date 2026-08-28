@@ -11,7 +11,7 @@ or Wizards of the Coast.
 La única base válida para trabajar es:
 
 - Rama: `protected/rc1.3-v-1.2.12`
-- Commit de la fuente: `78bc19478d56eb4d07e98df991af437ad6d2318b`
+- Commit de la fuente limpia: `414e463c8bec4913a716dc2840c9002f503f81a7`
 - Fuente completa: `source/rc1.1-complete-community`
 - POM raíz: `source/rc1.1-complete-community/pom.xml`
 
@@ -24,6 +24,9 @@ es la autoridad para cualquier automatización.
 La fuente completa validada se publica como asset de la release:
 
 [Descargar RC1.3 Stable Complete Source](https://github.com/vros01-Kabutosan/XMage-Community-Patch/releases/download/RC1.3-STABLE-SOURCE-v-1.0.7/IMPORT-CURRENT-STABLE-SOURCE-v-1.0.7-20260826-032506-CLEAN.zip)
+
+SHA-256 del asset:
+`78b5386c1dd3133f93418fdf930cb652e1bddd4bc4866b59b82aa39d7a4ef5fa`
 
 El asset anterior es la fuente completa. Los botones genéricos `Source code`
 de GitHub no sustituyen a ese asset.
