@@ -205,6 +205,10 @@ public class CardPanelRenderModeMTGO extends CardPanel {
             } else {
                 g2.drawImage(cardImage, cardOffsetX, cardOffsetY, null);
             }
+
+            if (getGameCard() instanceof PermanentView && ((PermanentView) getGameCard()).hasActiveTrigger()) {
+                drawTriggerIndicator(g2);
+            }
         } finally {
             g2.dispose();
         }
@@ -315,6 +319,22 @@ public class CardPanelRenderModeMTGO extends CardPanel {
                 }
             });
         }
+    }
+
+    private void drawTriggerIndicator(Graphics2D g) {
+        int size = Math.max(20, Math.min(30, getCardWidth() / 7));
+        int x = getCardWidth() - size - 2;
+        int y = 2;
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setColor(new Color(150, 0, 0, 220));
+        g.fillOval(x, y, size, size);
+        g.setColor(new Color(225, 0, 0, 245));
+        g.fillOval(x + 1, y + 1, size - 2, size - 2);
+        g.setColor(new Color(255, 232, 70));
+        g.setFont(new Font("SansSerif", Font.BOLD, Math.max(14, size * 2 / 3)));
+        FontMetrics fm = g.getFontMetrics();
+        String text = "T";
+        g.drawString(text, x + (size - fm.stringWidth(text)) / 2, y + (size - fm.getHeight()) / 2 + fm.getAscent());
     }
 
     private CardPanelAttributes getAttributes() {
