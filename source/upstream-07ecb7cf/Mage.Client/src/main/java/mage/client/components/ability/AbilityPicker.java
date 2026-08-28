@@ -256,33 +256,77 @@ public class AbilityPicker extends JXPanel implements MouseWheelListener {
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, false, cellHasFocus);
 
-            JLabel label = ((JLabel) c);
-
-            label.setOpaque(false);
+            label.setOpaque(true);
+            label.setBackground(new Color(0, 0, 0, 0));
             label.setForeground(Color.white);
+            label.setIcon(new CheckIcon(isSelected, sizeMod(18)));
+            label.setIconTextGap(sizeMod(9));
+            label.setBorder(BorderFactory.createEmptyBorder(sizeMod(3), sizeMod(6), sizeMod(3), sizeMod(6)));
 
-            if (choices.size() <= index) {
+            if (choices == null || choices.size() <= index) {
                 return label;
             }
 
             Object object = choices.get(index);
-            String name = object.toString();
-            label.setText(name);
+            label.setText(object.toString());
 
             if (isSelected) {
-                label.setIcon(new ImageIcon(rightImageHovered));
                 label.setForeground(SELECTED_COLOR);
-                label.setBorder(BorderFactory.createEmptyBorder());
-            } else {
-                label.setIcon(new ImageIcon(rightImage));
+                label.setBackground(new Color(255, 255, 255, 28));
             }
 
             return label;
         }
 
         private static final long serialVersionUID = 7689696087189956997L;
+    }
+
+    /**
+     * Minimal checkbox icon used by the ability picker. It is painted locally
+     * so the dialog does not depend on image resources.
+     */
+    private static final class CheckIcon implements Icon {
+
+        private final boolean checked;
+        private final int size;
+
+        private CheckIcon(boolean checked, int size) {
+            this.checked = checked;
+            this.size = Math.max(12, size);
+        }
+
+        @Override
+        public int getIconWidth() {
+            return size;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return size;
+        }
+
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            try {
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(checked ? SELECTED_COLOR : new Color(220, 220, 220, 210));
+                g2.setStroke(new BasicStroke(Math.max(1.5f, size / 9.0f)));
+                g2.drawRoundRect(x + 1, y + 1, size - 2, size - 2, size / 4, size / 4);
+
+                if (checked) {
+                    g2.setColor(Color.white);
+                    g2.setStroke(new BasicStroke(Math.max(1.5f, size / 8.0f), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                    int[] px = {x + size / 5, x + size * 2 / 5, x + size * 4 / 5};
+                    int[] py = {y + size / 2, y + size * 4 / 5, y + size / 4};
+                    g2.drawPolyline(px, py, 3);
+                }
+            } finally {
+                g2.dispose();
+            }
+        }
     }
 
     @Deprecated // do not use modal for it (use PickChoice instead)
