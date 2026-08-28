@@ -1,30 +1,58 @@
-# XMage Community Patch
+# XMage Community Patch — RC1.3
 
-This repository uses an immutable-base workflow for the XMage RC1.3 line.
+This repository contains an independent community patch for XMage 1.4.61.
+It is not an official XMage release and is not affiliated with XMage maintainers
+or Wizards of the Coast.
 
-## Start here
+## Estado actual
 
-- Canonical recovered base: protected/rc1.3-v-1.2.12
-- Current candidate: work/rc1.3-v-1.2.13-trigger-indicator
-- Compatibility/default pointer: port/1.4.61V1-community-patch
+**BASE ESTABLE SELLADA — RC1.3 v-1.2.12 — PRE-T**
 
-The compatibility pointer is never a development branch. It must point only to a promoted and verified protected base. Do not select a branch by its age, timestamp, commit count, or name similarity.
+La única base válida para trabajar es:
 
-## Source of truth
+- Rama: `protected/rc1.3-v-1.2.12`
+- Commit de la fuente limpia: `414e463c8bec4913a716dc2840c9002f503f81a7`
+- Fuente completa: `source/rc1.1-complete-community`
+- POM raíz: `source/rc1.1-complete-community/pom.xml`
 
-The complete source for this generation is under source/rc1.1-complete-community. The protected base includes the game UI, stack work, layout work, and the complete source tree. The previous partial source line is archived and is not a valid starting point.
+La fuente completa y sus recursos están en esa ruta. El indicador T no forma parte
+de esta base. [SOURCE-OF-TRUTH.md](https://github.com/vros01-Kabutosan/XMage-Community-Patch/blob/protected/rc1.3-v-1.2.12/SOURCE-OF-TRUTH.md)
+es la autoridad para cualquier automatización.
 
-Read CURRENT-BASE.md and docs/BASE-REGISTRY.md before changing anything.
+## Descarga de la fuente completa
 
-## Non-negotiable safety rules
+[Descargar RC1.3 Stable Complete Source](https://github.com/vros01-Kabutosan/XMage-Community-Patch/releases/download/RC1.3-STABLE-SOURCE-v-1.0.7/IMPORT-CURRENT-STABLE-SOURCE-v-1.0.7-20260826-032506-CLEAN.zip)
 
-- Work only from the exact protected base named in CURRENT-BASE.md.
-- Use a new work branch for every change.
-- Never modify the installed Windows copy directly.
-- Never replace only a client JAR when the base contains coordinated client, common, server, plugin, or resource changes.
-- A candidate is not stable until the full build, hashes, smoke test, activation backup, and post-activation verification all pass.
-- Any failed gate stops the process and leaves the previous stable base untouched.
+SHA-256 del asset:
+`78b5386c1dd3133f93418fdf930cb652e1bddd4bc4866b59b82aa39d7a4ef5fa`
 
-## For contributors
+El asset anterior es la fuente completa validada. Los botones genéricos `Source
+code` de GitHub no sustituyen a ese asset.
 
-The complete workflow is in CONTRIBUTING.md and docs/WORKFLOW.md. Pull requests must identify the exact base commit and include reproducible build and smoke evidence.
+## Regla permanente para nuevos mods
+
+Cada modificación comienza desde la base canónica exacta. Se crea una sola rama
+candidata, se conserva toda la fuente, se compila el reactor completo, se
+verifican recursos, hashes, dependencias y arranque, y se prueba en aislamiento.
+Solo después se puede activar explícitamente en la instalación.
+
+Si un POM, commit, ruta de fuente, recurso, artefacto, log o comprobación no
+coincide, el proceso se detiene sin copiar nada. No se seleccionan ramas por
+nombre, antigüedad, fecha, cantidad de commits o por ser `main`, `master`,
+`port`, `work`, `feature` o `latest`.
+
+Cuando una candidata supera todos los controles y es aceptada, su fuente completa
+pasa a ser la siguiente base canónica. La base anterior queda como recuperación
+de emergencia. Solo existe una candidata activa.
+
+## Límites de seguridad
+
+- La instalación activa de Windows se trata como objetivo protegido.
+- El desarrollo y las pruebas se realizan en una copia aislada.
+- Ningún script de build escribe en la instalación activa antes del preflight,
+  backup completo, build completa y activación explícita.
+- No se permite sincronización `/MIR`.
+- La candidata T anterior está retirada y no es fuente de build ni de activación.
+- Las ramas y releases históricas no son fuentes válidas aunque sigan visibles;
+  el selector automático debe rechazar cualquier referencia que no sea la base
+  canónica indicada arriba.
