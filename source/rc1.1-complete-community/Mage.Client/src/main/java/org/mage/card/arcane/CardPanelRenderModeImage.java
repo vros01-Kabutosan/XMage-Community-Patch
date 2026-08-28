@@ -15,6 +15,7 @@ import mage.constants.SubType;
 import mage.util.DebugUtil;
 import mage.view.CardView;
 import mage.view.CounterView;
+import mage.view.PermanentView;
 import org.jdesktop.swingx.graphics.GraphicsUtilities;
 import org.mage.plugins.card.images.ImageCache;
 import org.mage.plugins.card.images.ImageCacheData;
@@ -293,6 +294,9 @@ public class CardPanelRenderModeImage extends CardPanel {
                 setTypeIcon(ImageManagerImpl.instance.getActivatedAbilityImage(), "Activated Ability");
             }
         }
+
+        // Active trigger indicator for permanents
+        updateTriggerIndicator(newGameCard);
 
         // Token icon
         if (this.getGameCard().isToken()) {
@@ -707,6 +711,37 @@ public class CardPanelRenderModeImage extends CardPanel {
 
     private void setTitle(CardView card) {
         titleText.setText(!displayTitleAnyway && hasImage ? "" : card.getDisplayName());
+    }
+
+    private static BufferedImage createTriggerIndicator() {
+        BufferedImage image = new BufferedImage(25, 25, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = image.createGraphics();
+        try {
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setColor(new Color(150, 0, 0, 220));
+            g.fillOval(1, 1, 23, 23);
+            g.setColor(new Color(225, 0, 0, 245));
+            g.fillOval(2, 2, 21, 21);
+            g.setColor(new Color(255, 232, 70));
+            g.setFont(new Font("SansSerif", Font.BOLD, 17));
+            FontMetrics fm = g.getFontMetrics();
+            String text = "T";
+            g.drawString(text, (25 - fm.stringWidth(text)) / 2, (25 - fm.getHeight()) / 2 + fm.getAscent());
+        } finally {
+            g.dispose();
+        }
+        return image;
+    }
+
+    private void updateTriggerIndicator(CardView card) {
+        boolean active = card instanceof PermanentView && ((PermanentView) card).hasActiveTrigger();
+        if (active && typeIconPanel == null) {
+            setTypeIcon(createTriggerIndicator(), "Active trigger");
+        } else if (!active && typeIconPanel != null && card instanceof PermanentView) {
+            typeIconPanel.setVisible(false);
+        } else if (active && typeIconPanel != null && card instanceof PermanentView) {
+            typeIconPanel.setVisible(true);
+        }
     }
 
     private void setTypeIcon(BufferedImage bufferedImage, String toolTipText) {
