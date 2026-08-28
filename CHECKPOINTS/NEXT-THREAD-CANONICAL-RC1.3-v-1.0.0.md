@@ -64,7 +64,7 @@ Asset único de fuente completa validado:
 5. Mantener todos los recursos y la configuración necesaria; no usar
    sincronización `/MIR`.
 6. Registrar absolutamente cada paso en
-   `J:\\mtg\\_LOGS\\<NOMBRE-FASE>_<timestamp>\\`; ningún proceso silencioso.
+   `J:\mtg\_LOGS\<NOMBRE-FASE>_<timestamp>\`; ningún proceso silencioso.
 7. Compilar el reactor completo con JDK 17 y Maven validado, capturando toda la
    salida.
 8. Verificar fuente, recursos, dependencias, artefactos y SHA-256.
@@ -74,7 +74,7 @@ Asset único de fuente completa validado:
 12. Tras la aceptación, la fuente completa de esa generación pasa a ser la
     siguiente base canónica; esta base anterior queda como emergencia.
 
-La instalación activa `J:\\mtg\\xmage` permanece fuera del repositorio y no debe
+La instalación activa `J:\mtg\xmage` permanece fuera del repositorio y no debe
 tocarse hasta el final explícito del protocolo. La T retirada no puede
 reintroducirse desde ninguna referencia histórica.
 
