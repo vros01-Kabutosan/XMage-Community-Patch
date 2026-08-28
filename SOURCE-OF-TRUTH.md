@@ -16,9 +16,14 @@ this file, the operation must stop.
 - Source version: XMage 1.4.61 / RC1.3
 - Stable state: pre-T; the trigger indicator is intentionally not included
 
-The canonical source commit is pinned independently of branch age or name. The
-three source files below were compared against the imported complete source and
-must remain unchanged until a new candidate passes every gate:
+The commit 78bc194... is the exact source-tree state used by the protected
+generation. Its only change after 289337b... is workflow documentation outside
+the source tree. The existing source release asset is tagged at 289337b... and
+is source-equivalent; that tag is an immutable archive identity, not an
+alternative branch selector.
+
+The three source files below were compared against the imported complete source
+and must remain unchanged until a new candidate passes every gate:
 
 - Mage.Common/src/main/java/mage/view/PermanentView.java
   Git blob: 6f3684e8e12d873d85a07253c95213cfb54fb7df
@@ -29,7 +34,7 @@ must remain unchanged until a new candidate passes every gate:
 
 ## Branch rule
 
-Only the canonical ref above may be used as the starting point for a new mod.
+Only the canonical ref above may be used as the starting point for new work.
 The compatibility pointer port/1.4.61V1-community-patch is not a source selector.
 Branches named work/, feature/, checkpoint/, archive/ or isolation/ are never
 valid build sources unless this file explicitly names one as the current
