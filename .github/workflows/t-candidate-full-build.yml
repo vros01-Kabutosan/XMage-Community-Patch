@@ -1,0 +1,45 @@
+name: T candidate full build
+
+on:
+  push:
+    branches:
+      - work/rc1.3-trigger-indicator-v-1.0.1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: t-candidate-full-build
+  cancel-in-progress: true
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: source/rc1.1-complete-community
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@v5
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+          cache-dependency-path: source/rc1.1-complete-community/pom.xml
+
+      - name: Compile full reactor
+        shell: bash
+        run: mvn -B -U -DskipTests package
+
+      - name: Verify T scope
+        shell: bash
+        run: |
+          test -f Mage.Common/src/main/java/mage/view/PermanentView.java
+          test -f Mage.Client/src/main/java/org/mage/card/arcane/CardPanelRenderModeImage.java
+          test -f Mage.Client/src/main/java/org/mage/card/arcane/CardPanelRenderModeMTGO.java
+          grep -q "hasActiveTrigger" Mage.Common/src/main/java/mage/view/PermanentView.java
+          grep -q "drawTriggerIndicator" Mage.Client/src/main/java/org/mage/card/arcane/CardPanelRenderModeMTGO.java
