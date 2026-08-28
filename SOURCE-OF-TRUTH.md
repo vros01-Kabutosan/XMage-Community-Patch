@@ -18,9 +18,16 @@ this file, the operation must stop.
 
 The commit 78bc194... is the exact source-tree state used by the protected
 generation. Its only change after 289337b... is workflow documentation outside
-the source tree. The existing source release asset is tagged at 289337b... and
-is source-equivalent; that tag is an immutable archive identity, not an
-alternative branch selector.
+the source tree. The validated complete-source asset is:
+
+- Release: RC1.3-STABLE-SOURCE-v-1.0.7
+- Asset: IMPORT-CURRENT-STABLE-SOURCE-v-1.0.7-20260826-032506-CLEAN.zip
+- Entries: 42,204
+- SHA-256: 78b5386c1dd3133f93418fdf930cb652e1bddd4bc4866b59b82aa39d7a4ef5fa
+- Generated files: none
+
+The release tag is source-equivalent and its immutable archive identity is
+289337b...; it is not an alternative branch selector.
 
 The three source files below were compared against the imported complete source
 and must remain unchanged until a new candidate passes every gate:
