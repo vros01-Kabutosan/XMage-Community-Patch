@@ -1,34 +1,30 @@
-# Current Base Contract
+# Current base contract
 
-Status: CANDIDATE WORK IN PROGRESS
+Status: STABLE / SEALED / PRE-T
 
-## Exact base for the next operation
+Use exactly this source for every future mod:
 
-Use this protected base and no other branch:
+- Canonical ref: protected/rc1.3-v-1.2.12
+- Sealed source-tree commit: 414e463c8bec4913a716dc2840c9002f503f81a7
+- Complete source root: source/rc1.1-complete-community
+- Root POM: source/rc1.1-complete-community/pom.xml
+- Validated complete-source asset SHA-256: 78b5386c1dd3133f93418fdf930cb652e1bddd4bc4866b59b82aa39d7a4ef5fa
 
-- Protected recovered base: protected/rc1.3-v-1.2.12
-- Base commit: 289337b244f2a47aeffca6f60707c73e6f1b890b
-- Historical continuity input: checkpoint/xmage-stack-v-1.2.9-continuity
-- Source root: source/rc1.1-complete-community
+There is no active candidate. The T candidate is retired and its branch is
+neutralized on the pre-T source commit. The compatibility pointer
+port/1.4.61V1-community-patch is protected for navigation only; it is not a
+source selector.
 
-The base above is the recovered complete line containing the stack and UI state. The old port line is not equivalent.
+The previous value 289337b244f2a47aeffca6f60707c73e6f1b890b identifies the
+immutable source-release tag tree, but it must not be selected by a branch-name
+heuristic. Resolve this exact canonical ref, source commit, source root and POM
+together. If one does not match, fail closed.
 
-## Candidate being prepared
+Never select by latest, oldest, timestamp, commit count, default branch, folder
+name, main, master, port, work, feature or local installation contents.
 
-- Work branch: work/rc1.3-v-1.2.13-trigger-indicator
-- Change: synchronized red T marker for a permanent whose triggered ability is on the stack
-- Candidate state: build and activation evidence pending
-
-Until the candidate passes every gate, the protected base remains the rollback target. Do not merge or activate the candidate by inference.
-
-## Branch selection rule
-
-Do not choose a branch using latest, recent, main, master, port, timestamp, or commit count. Read this file, resolve the exact commit, and stop if the branch or commit does not match.
-
-## Installation boundary
-
-The protected installation is J:\mtg\xmage. Development and staging must use an isolated copy under J:\mtg\_ARCHIVO. No script may write to the installation before a complete preflight, an immutable backup, a successful full build, and an explicit activation step.
-
-## Emergency rollback
-
-The previous stable installation must always have a dated, hash-verified backup and a one-file rollback command. Rollback is allowed only for recovery; it must never become the normal development workflow.
+A future change must use one candidate branch, the complete source and resources,
+a full Maven build, source/resource/artifact hashes, isolated smoke tests, a
+dated backup, and post-activation verification. Any failed gate leaves the
+stable installation untouched. The previous stable generation remains the
+emergency rollback point.

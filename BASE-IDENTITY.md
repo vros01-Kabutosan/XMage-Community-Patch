@@ -1,13 +1,18 @@
 # Base identity
 
-This file freezes the identity of the recovered complete line used for the next candidate.
+Status: SEALED / STABLE / PRE-T
 
-- Protected ref: protected/rc1.3-v-1.2.12
-- Base commit: 289337b244f2a47aeffca6f60707c73e6f1b890b
-- Recovery input ref: checkpoint/xmage-stack-v-1.2.9-continuity
-- Foundation tag: source-foundation-v-1.7-complete-target
-- Foundation commit: b974aa865b3a8b1a24df52a2321eacc54f06dfac
-- Complete source root: source/rc1.1-complete-community
-- Candidate ref: work/rc1.3-v-1.2.13-trigger-indicator
+- Canonical ref: protected/rc1.3-v-1.2.12
+- Sealed source-tree commit: 414e463c8bec4913a716dc2840c9002f503f81a7
+- Source root: source/rc1.1-complete-community
+- Root POM: source/rc1.1-complete-community/pom.xml
+- Complete-source asset: RC1.3-STABLE-SOURCE-v-1.0.7
+- Asset SHA-256: 78b5386c1dd3133f93418fdf930cb652e1bddd4bc4866b59b82aa39d7a4ef5fa
+- T state: retired and absent from the canonical source
 
-The commit and source root above are a pair. They must be verified together before any build or activation.
+This is the only source identity from which a new candidate may be created.
+The compatibility branch port/1.4.61V1-community-patch is protected navigation
+only. No current candidate is registered.
+
+The source tree, source archive, POM and hashes must be resolved as one set.
+Any mismatch stops the operation before build or activation.
