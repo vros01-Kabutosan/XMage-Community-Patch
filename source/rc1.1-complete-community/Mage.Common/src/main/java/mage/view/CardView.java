@@ -685,6 +685,11 @@ public class CardView extends SimpleCardView {
 
     private void generateCardIconsForPermanent(Permanent permanent, Game game) {
         // card icons for permanents on battlefield
+        if (game == null) {
+            return;
+        }
+
+        // icon - all from abilities
         permanent.getAbilities(game).forEach(ability -> {
             this.cardIcons.addAll(ability.getIcons(game));
             if (ability instanceof TriggeredAbility) {
@@ -694,12 +699,13 @@ public class CardView extends SimpleCardView {
         });
 
         // icon - face down
-        if (this.faceDown) {
+        if (permanent.isFaceDown(game)) {
             this.cardIcons.add(CardIconImpl.FACE_DOWN);
         }
 
         // icon - commander
-        if (permanent.isCommander()) {
+        Player owner = game.getPlayer(game.getOwnerId(permanent));
+        if (owner != null && game.isCommanderObject(owner, permanent)) {
             this.cardIcons.add(CardIconImpl.COMMANDER);
         }
 
@@ -710,17 +716,22 @@ public class CardView extends SimpleCardView {
 
         // icon - restrictions (search it in card hints)
         List<String> restricts = new ArrayList<>();
-        for (String r : this.rules) {
+        this.rules.forEach(r -> {
             if (r.startsWith(HintUtils.HINT_ICON_RESTRICT)
                     || r.startsWith(HintUtils.HINT_ICON_REQUIRE)) {
-                restricts.add(r.replace(HintUtils.HINT_ICON_RESTRICT, "")
-                        .replace(HintUtils.HINT_ICON_REQUIRE, ""));
+                restricts.add(r
+                        .replace(HintUtils.HINT_ICON_RESTRICT, "")
+                        .replace(HintUtils.HINT_ICON_REQUIRE, "")
+                        .trim()
+                );
             }
-        }
+        });
         if (!restricts.isEmpty()) {
+            restricts.sort(String::compareTo);
             this.cardIcons.add(new CardIconImpl(CardIconType.OTHER_HAS_RESTRICTIONS, String.join("<br>", restricts)));
         }
     }
+
     private void generateCardIconsForAny(MageObject object, Ability ability, Game game) {
         if (game == null) {
             return;
