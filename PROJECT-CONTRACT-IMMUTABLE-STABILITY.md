@@ -75,6 +75,19 @@ Si falla el análisis, la compilación o la prueba:
 
 Un fallo no se repara sobre un taller contaminado: se restaura y se empieza de nuevo desde la misma base.
 
+## 5.1 Aprendizaje y regresión
+
+Cada fallo reproducible del proceso o del mod se convierte en una mejora permanente:
+
+- registrar la causa exacta y el archivo o fase afectada;
+- corregir automáticamente el proceso o el código cuando sea seguro hacerlo;
+- incrementar la versión de corrección, sin reutilizar la variante fallida;
+- añadir una comprobación de regresión para que el mismo fallo no vuelva a bloquear el flujo;
+- conservar únicamente el diagnóstico, el parche corregido y la prueba asociada;
+- aplicar esta experiencia a todos los mods futuros, manteniendo el cambio mínimo.
+
+La rapidez se obtiene reutilizando comprobaciones y herramientas ya validadas, no saltándose gates de seguridad. Si aparece un muro técnico, se evalúa otra vía compatible con la base antes de abandonar el objetivo.
+
 ## 6. Validación obligatoria
 
 Un mod solo se considera válido después de:
