@@ -26,11 +26,36 @@ Antes de modificar:
 - comprobar que el taller está limpio;
 - crear un backup reversible;
 - cerrar XMage, servidor y procesos Java que puedan bloquear archivos;
-- crear un log en `J:\\mtg\\_LOGS`.
+- crear un log en `J:\\mtg\\_LOGS`;
+- verificar que la fuente contiene el árbol completo necesario para compilar y ejecutar el objetivo.
 
 No se crean clones ni carpetas nuevas para cada intento.
 
-## 3. Trabajo
+## 3. Integridad de la fuente
+
+La base no se considera completa por tener un SHA correcto únicamente.
+
+Antes de modificar, se debe comprobar que el árbol elegido contiene:
+
+- módulos completos de cliente, servidor, común y motor;
+- clases reales requeridas por el objetivo;
+- `pom.xml` y dependencias coherentes;
+- recursos presentes en fuente y en el JAR;
+- una única raíz de compilación identificada.
+
+Si el repositorio contiene árboles paralelos, históricos, upstream o parciales, no se deben mezclar automáticamente. Hay que identificar cuál es la fuente completa de ejecución y usarla como origen del taller.
+
+Si se detecta una fuente híbrida, incompleta, una ruta incorrecta o una dependencia ausente:
+
+1. detener la modificación;
+2. registrar el diagnóstico;
+3. seleccionar automáticamente la fuente completa verificada si existe;
+4. reconstruir el taller desde ella;
+5. volver a ejecutar el preflight.
+
+Nunca se parchea una fuente incompleta para “hacerla funcionar”.
+
+## 4. Trabajo
 
 El cambio debe ser mínimo y limitarse al objetivo solicitado.
 
@@ -38,7 +63,7 @@ No se modifica la instalación activa, la base sellada, la configuración person
 
 No se usan ramas antiguas ni código de intentos fallidos sin demostrar su procedencia.
 
-## 4. Fallo
+## 5. Fallo
 
 Si falla el análisis, la compilación o la prueba:
 
@@ -50,7 +75,7 @@ Si falla el análisis, la compilación o la prueba:
 
 Un fallo no se repara sobre un taller contaminado: se restaura y se empieza de nuevo desde la misma base.
 
-## 5. Validación obligatoria
+## 6. Validación obligatoria
 
 Un mod solo se considera válido después de:
 
@@ -63,7 +88,7 @@ Un mod solo se considera válido después de:
 
 La compilación correcta por sí sola no demuestra que XMage funcione.
 
-## 6. Activación
+## 7. Activación
 
 La activación es siempre la última fase.
 
@@ -77,7 +102,7 @@ Debe:
 
 Si cualquier comprobación falla, la activación se cancela automáticamente.
 
-## 7. GitHub
+## 8. GitHub
 
 La rama estable y los tags protegidos no se modifican directamente.
 
@@ -92,7 +117,7 @@ Solo se conserva de cada mod:
 
 Las ramas de trabajo fallidas no se convierten en bases ni se acumulan como método de trabajo.
 
-## 8. Nomenclatura
+## 9. Nomenclatura
 
 - Mod inicial: `v-1.0.0`
 - Corrección: `v-1.0.0.1`
@@ -101,7 +126,7 @@ Las ramas de trabajo fallidas no se convierten en bases ni se acumulan como mét
 
 El mismo número debe aparecer en el mod, script, log, backup, commit y paquete.
 
-## 9. Resultado obligatorio
+## 10. Resultado obligatorio
 
 Cada ejecución termina con uno de estos estados:
 
@@ -111,4 +136,4 @@ Cada ejecución termina con uno de estos estados:
 
 Nunca se informa de éxito si no existe una prueba real.
 
-**Regla central: una base sellada, un taller reutilizable, un smoke reutilizable y cero cementerios de intentos.**
+**Regla central: una base sellada completa, un taller reutilizable, un smoke reutilizable, autocorrección de rutas incompletas y cero cementerios de intentos.**
