@@ -33,6 +33,7 @@ public class CardIconImpl implements CardIcon, Serializable {
     public static final CardIconImpl ABILITY_LIFELINK = new CardIconImpl(CardIconType.ABILITY_LIFELINK, "Lifelink");
     public static final CardIconImpl ABILITY_TRAMPLE = new CardIconImpl(CardIconType.ABILITY_TRAMPLE, "Trample");
     public static final CardIconImpl ABILITY_VIGILANCE = new CardIconImpl(CardIconType.ABILITY_VIGILANCE, "Vigilance");
+    public static final CardIconImpl ABILITY_TRIGGERED = new CardIconImpl(CardIconType.ABILITY_TRIGGERED, "Triggered ability", "T");
 
     // "Target protection" abilities
     public static final CardIconImpl ABILITY_HEXPROOF = new CardIconImpl(CardIconType.ABILITY_HEXPROOF, "Hexproof");
