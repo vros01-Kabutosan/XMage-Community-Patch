@@ -6,6 +6,7 @@ import mage.MageObject;
 import mage.ObjectColor;
 import mage.abilities.Abilities;
 import mage.abilities.Ability;
+import mage.abilities.TriggeredAbility;
 import mage.abilities.Mode;
 import mage.abilities.SpellAbility;
 import mage.abilities.dynamicvalue.common.GetXValue;
@@ -684,23 +685,21 @@ public class CardView extends SimpleCardView {
 
     private void generateCardIconsForPermanent(Permanent permanent, Game game) {
         // card icons for permanents on battlefield
-        if (game == null) {
-            return;
-        }
-
-        // icon - all from abilities
         permanent.getAbilities(game).forEach(ability -> {
             this.cardIcons.addAll(ability.getIcons(game));
+            if (ability instanceof TriggeredAbility) {
+                this.cardIcons.add(new CardIconImpl(CardIconType.ABILITY_TRIGGERED,
+                        "Triggered ability", "T"));
+            }
         });
 
         // icon - face down
-        if (permanent.isFaceDown(game)) {
+        if (this.faceDown) {
             this.cardIcons.add(CardIconImpl.FACE_DOWN);
         }
 
         // icon - commander
-        Player owner = game.getPlayer(game.getOwnerId(permanent));
-        if (owner != null && game.isCommanderObject(owner, permanent)) {
+        if (permanent.isCommander()) {
             this.cardIcons.add(CardIconImpl.COMMANDER);
         }
 
@@ -711,22 +710,17 @@ public class CardView extends SimpleCardView {
 
         // icon - restrictions (search it in card hints)
         List<String> restricts = new ArrayList<>();
-        this.rules.forEach(r -> {
+        for (String r : this.rules) {
             if (r.startsWith(HintUtils.HINT_ICON_RESTRICT)
                     || r.startsWith(HintUtils.HINT_ICON_REQUIRE)) {
-                restricts.add(r
-                        .replace(HintUtils.HINT_ICON_RESTRICT, "")
-                        .replace(HintUtils.HINT_ICON_REQUIRE, "")
-                        .trim()
-                );
+                restricts.add(r.replace(HintUtils.HINT_ICON_RESTRICT, "")
+                        .replace(HintUtils.HINT_ICON_REQUIRE, ""));
             }
-        });
+        }
         if (!restricts.isEmpty()) {
-            restricts.sort(String::compareTo);
             this.cardIcons.add(new CardIconImpl(CardIconType.OTHER_HAS_RESTRICTIONS, String.join("<br>", restricts)));
         }
     }
-
     private void generateCardIconsForAny(MageObject object, Ability ability, Game game) {
         if (game == null) {
             return;
