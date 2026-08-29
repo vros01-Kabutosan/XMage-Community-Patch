@@ -1,76 +1,114 @@
-# XMage Community Patch — Immutable Stability Contract
+# XMage Community Patch — Contrato de trabajo seguro y simple
 
-**Status: Mandatory and permanent**
+**Estado: obligatorio**
 
-This contract defines the only permitted development model for the XMage Community Patch. It applies to Victor, every human contributor, every AI system, every script, every automation, and every future version of the project.
+Este contrato protege la base y mantiene el trabajo rápido. Se aplica a cualquier persona, IA o script.
 
-## 1. Stable releases are immutable
+## 1. Tres carpetas permanentes
 
-Any validated release identified as `RC1`, `RC1.1`, `RC1.2`, `RC2.0`, or a later stable checkpoint is a protected base.
+Solo se usan estas rutas:
 
-A stable base must never be modified directly, overwritten, rebuilt in place, or used as an experimental workspace.
+- Base sellada: `J:\\mtg\\_XMAGE-BASE-SELLADA`
+- Taller único: `J:\\mtg\\_XMAGE-TALLER`
+- Smoke único: `J:\\mtg\\_XMAGE-SMOKE`
 
-## 2. All work starts from a clone
+La instalación activa `J:\\mtg\\xmage` nunca es una carpeta de trabajo.
 
-Every new feature, mod, refactor, experiment, or test must start from a separate clone or work branch created from the latest protected stable base.
+La base sellada se conserva intacta, con su SHA-256 y un backup independiente. El taller se puede modificar y reutilizar para todos los mods.
 
-Examples:
+## 2. Inicio de cada mod
 
-```text
-RC1.1 stable
-  -> work/stack-floating-v-1
-  -> work/feature-name-v-1
-```
+Cada mod empieza desde la base sellada verificada.
 
-No tool may use the stable release directory as its output, build, extraction, or temporary directory.
+Antes de modificar:
 
-## 3. Failed work must be disposable
+- comprobar que la base y el taller corresponden al SHA autorizado;
+- comprobar que el taller está limpio;
+- crear un backup reversible;
+- cerrar XMage, servidor y procesos Java que puedan bloquear archivos;
+- crear un log en `J:\\mtg\\_LOGS`.
 
-A failed mod, broken build, bad prompt, incorrect merge, or experimental change may only affect its own work branch or clone.
+No se crean clones ni carpetas nuevas para cada intento.
 
-If a work branch is broken, it is discarded. The stable base is restored by starting again from the protected checkpoint.
+## 3. Trabajo
 
-## 4. Promotion to a new stable release
+El cambio debe ser mínimo y limitarse al objetivo solicitado.
 
-Validated changes are accumulated and tested only in a development branch. When the selected changes are confirmed functional, the result is promoted to a new stable release:
+No se modifica la instalación activa, la base sellada, la configuración personal, las imágenes, el servidor, el launcher ni funciones no relacionadas, salvo que el objetivo lo exija expresamente.
 
-```text
-RC1.1 stable
-  -> work branch
-  -> validated changes
-  -> RC1.2 or RC2.0
-  -> full verification
-  -> protected stable checkpoint
-```
+No se usan ramas antiguas ni código de intentos fallidos sin demostrar su procedencia.
 
-A new RC becomes a protected base only after validation, packaging, hash generation, clean-download testing, extraction testing, and functional smoke testing.
+## 4. Fallo
 
-## 5. GitHub protection
+Si falla el análisis, la compilación o la prueba:
 
-The public repository may be read, cloned, forked, and used to propose changes. Stable release tags and stable branches must be protected against deletion, force updates, and direct changes.
+- no se activa nada;
+- se conserva el log y el diagnóstico;
+- se restaura el taller desde la base sellada;
+- no se borra la base ni el backup;
+- no se crean ramas o carpetas de residuos.
 
-Development must occur through separate branches and Pull Requests. A Pull Request is never merged into a stable base without deliberate human approval.
+Un fallo no se repara sobre un taller contaminado: se restaura y se empieza de nuevo desde la misma base.
 
-## 6. Local protection
+## 5. Validación obligatoria
 
-Each stable checkpoint must also have a local protected copy with:
+Un mod solo se considera válido después de:
 
-- no normal write permission;
-- a SHA-256 manifest;
-- a dedicated log;
-- no experiments or temporary files;
-- no use as a build or work directory.
+1. revisión del diff;
+2. compilación completa;
+3. auditoría de recursos del JAR;
+4. arranque real del cliente en el smoke;
+5. prueba funcional relacionada con el objetivo;
+6. comprobación de que la instalación activa sigue intacta.
 
-## 7. No exceptions by ambiguity
+La compilación correcta por sí sola no demuestra que XMage funcione.
 
-An incomplete prompt, mistaken instruction, automated tool, AI hallucination, rushed fix, or accidental path selection must never be interpreted as permission to modify a stable base.
+## 6. Activación
 
-When the target path or version is ambiguous, the operation must stop.
+La activación es siempre la última fase.
 
-## 8. Recovery principle
+Debe:
 
-At all times, at least one verified stable checkpoint must remain recoverable independently of the active work.
+- crear backup de los archivos que sustituirá;
+- copiar solo los artefactos validados;
+- comprobar que el destino es único;
+- conservar rollback;
+- registrar hashes antes y después.
 
-No single mod, branch, AI, script, merge, or failed experiment may be capable of destroying the project's last stable base.
+Si cualquier comprobación falla, la activación se cancela automáticamente.
 
-**This contract is part of the project architecture and remains in force for all future XMage Community Patch versions.**
+## 7. GitHub
+
+La rama estable y los tags protegidos no se modifican directamente.
+
+El trabajo diario se hace en el taller local. GitHub recibe únicamente el resultado validado, en una rama temporal y mediante PR. No se fusiona automáticamente.
+
+Solo se conserva de cada mod:
+
+- el commit o parche validado;
+- el log;
+- el backup;
+- el resultado de las pruebas.
+
+Las ramas de trabajo fallidas no se convierten en bases ni se acumulan como método de trabajo.
+
+## 8. Nomenclatura
+
+- Mod inicial: `v-1.0.0`
+- Corrección: `v-1.0.0.1`
+- Siguiente corrección: `v-1.0.0.2`
+- Cambio grande: `v-2.0.0`
+
+El mismo número debe aparecer en el mod, script, log, backup, commit y paquete.
+
+## 9. Resultado obligatorio
+
+Cada ejecución termina con uno de estos estados:
+
+- **COMPLETADO**: compilación, smoke y activación correctos.
+- **ABORTADO**: se produjo un fallo y no se activó nada.
+- **BLOQUEADO**: falta una ruta, herramienta, permiso o comprobación.
+
+Nunca se informa de éxito si no existe una prueba real.
+
+**Regla central: una base sellada, un taller reutilizable, un smoke reutilizable y cero cementerios de intentos.**
