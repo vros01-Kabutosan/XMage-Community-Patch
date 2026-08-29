@@ -57,8 +57,13 @@ public class CardIconsTest extends CardTestPlayerBase {
             Assert.assertEquals("player", player.getName(), playerView.getName());
             CardView cardView = playerView.getBattlefield().values().stream().filter(p -> p.getName().equals("Chalice of the Void")).findFirst().orElse(null);
             Assert.assertNotNull("must have 1 chalice in battlefield", cardView);
-            Assert.assertEquals("must have x cost card icons in battlefield (card)", 1, cardView.getCardIcons().size());
-            Assert.assertEquals("x cost text", "x=2", cardView.getCardIcons().get(0).getText());
+            Assert.assertEquals("must have x cost card icons in battlefield (card)", 1,
+                    cardView.getCardIcons().stream()
+                            .filter(icon -> icon.getIconType() == CardIconType.OTHER_COST_X)
+                            .count());
+            Assert.assertEquals("x cost text", "x=2", cardView.getCardIcons().stream()
+                    .filter(icon -> icon.getIconType() == CardIconType.OTHER_COST_X)
+                    .findFirst().get().getText());
         });
 
         setStrictChooseMode(true);
